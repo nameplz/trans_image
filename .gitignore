@@ -1,0 +1,68 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+*.whl
+
+# 가상환경
+.venv/
+venv/
+env/
+.env
+
+# 시크릿 / API 키 (절대 커밋 금지)
+.env
+.env.*
+secrets.yaml
+secrets.json
+*.key
+*.pem
+
+# 설정 오버라이드 (로컬 API 키 포함 가능)
+config/local_config.yaml
+config/local_*.yaml
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 로그
+logs/
+*.log
+
+# EasyOCR / PaddleOCR 모델 캐시
+.EasyOCR/
+.paddleocr/
+models/
+
+# 테스트 결과
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# PyInstaller
+*.spec
+dist_pyinstaller/
+
+# 임시 파일
+tmp/
+temp/
+*.tmp
+
+# 번들 폰트 (용량 큰 경우 LFS 사용 권장)
+# assets/fonts/*.ttf
+# assets/fonts/*.otf

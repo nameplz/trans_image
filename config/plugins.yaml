@@ -1,0 +1,90 @@
+# 플러그인 레지스트리
+# enabled: true/false 로 플러그인 활성화 제어
+
+ocr:
+  - id: easyocr
+    enabled: true
+    module: "src.plugins.ocr.easyocr_plugin"
+    class: "EasyOCRPlugin"
+    config:
+      gpu: false
+      model_storage_directory: null  # null이면 기본 경로 (~/.EasyOCR)
+      download_enabled: true
+
+  - id: paddleocr
+    enabled: false
+    module: "src.plugins.ocr.paddleocr_plugin"
+    class: "PaddleOCRPlugin"
+    config:
+      use_gpu: false
+      lang: "ch"
+
+translators:
+  - id: deepl
+    enabled: true
+    module: "src.plugins.translators.deepl_translator"
+    class: "DeepLTranslatorPlugin"
+    config:
+      api_key_env: "DEEPL_API_KEY"
+      free_api: false  # true이면 free tier 엔드포인트 사용
+
+  - id: gemini
+    enabled: true
+    module: "src.plugins.translators.gemini_translator"
+    class: "GeminiTranslatorPlugin"
+    config:
+      api_key_env: "GOOGLE_API_KEY"
+      model: "gemini-1.5-flash"
+
+  - id: grok
+    enabled: true
+    module: "src.plugins.translators.grok_translator"
+    class: "GrokTranslatorPlugin"
+    config:
+      api_key_env: "XAI_API_KEY"
+      model: "grok-beta"
+      base_url: "https://api.x.ai/v1"
+
+  - id: papago
+    enabled: true
+    module: "src.plugins.translators.papago_translator"
+    class: "PapagoTranslatorPlugin"
+    config:
+      client_id_env: "PAPAGO_CLIENT_ID"
+      client_secret_env: "PAPAGO_CLIENT_SECRET"
+
+  - id: ollama
+    enabled: true
+    module: "src.plugins.translators.ollama_translator"
+    class: "OllamaTranslatorPlugin"
+    config:
+      base_url: "http://localhost:11434"
+      model: "llama3.1"
+
+agents:
+  - id: claude
+    enabled: true
+    module: "src.plugins.agents.claude_agent"
+    class: "ClaudeAgentPlugin"
+    config:
+      api_key_env: "ANTHROPIC_API_KEY"
+      model: "claude-sonnet-4-6"
+      max_tokens: 4096
+
+  - id: openai
+    enabled: true
+    module: "src.plugins.agents.openai_agent"
+    class: "OpenAIAgentPlugin"
+    config:
+      api_key_env: "OPENAI_API_KEY"
+      model: "gpt-4o"
+      max_tokens: 4096
+
+  - id: ollama
+    enabled: true
+    module: "src.plugins.agents.ollama_agent"
+    class: "OllamaAgentPlugin"
+    config:
+      base_url: "http://localhost:11434"
+      model: "llama3.1"
+      max_tokens: 4096

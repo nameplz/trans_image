@@ -1,0 +1,19 @@
+# 텍스트 파일 줄바꿈 자동 정규화 (LF)
+* text=auto eol=lf
+
+# 바이너리 파일
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.bmp binary
+*.gif binary
+*.ico binary
+*.ttf binary
+*.otf binary
+*.woff binary
+*.woff2 binary
+*.pyc binary
+*.pyd binary
+*.dll binary
+*.exe binary

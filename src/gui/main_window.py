@@ -24,12 +24,16 @@ from src.core.plugin_manager import PluginManager
 from src.core.session import Session
 from src.gui.dialogs.export_dialog import ExportDialog
 from src.gui.dialogs.settings_dialog import SettingsDialog
+from src.chat.conversation import ConversationSession
+from src.chat.message_parser import MessageParser
+from src.gui.widgets.chat_panel import ChatPanel
 from src.gui.widgets.comparison_view import ComparisonView
 from src.gui.widgets.image_viewer import ImageViewer
 from src.gui.widgets.job_queue_panel import JobQueuePanel
 from src.gui.widgets.progress_panel import ProgressPanel
 from src.gui.widgets.region_editor import RegionEditorPanel
 from src.gui.widgets.region_overlay import RegionOverlayManager
+from src.gui.workers.batch_worker import BatchWorker
 from src.gui.workers.pipeline_worker import WorkerPool
 from src.models.processing_job import ProcessingJob
 from src.utils.logger import get_logger
@@ -52,6 +56,9 @@ class MainWindow(QMainWindow):
         self._session = session
         self._worker_pool = WorkerPool(pipeline, max_concurrent=2)
         self._current_job: ProcessingJob | None = None
+        self._batch_worker: BatchWorker | None = None
+        self._chat_session = ConversationSession()
+        self._msg_parser = MessageParser()
 
         self.setWindowTitle("trans_image — AI 이미지 텍스트 번역")
         self.setMinimumSize(1200, 700)
@@ -96,7 +103,12 @@ class MainWindow(QMainWindow):
         self._progress_panel = ProgressPanel()
         right_splitter.addWidget(self._progress_panel)
 
-        right_splitter.setSizes([300, 200, 100])
+        self._chat_panel = ChatPanel()
+        self._chat_panel.message_sent.connect(self._on_chat_message)
+        self._chat_panel.cancel_requested.connect(self._cancel_batch)
+        right_splitter.addWidget(self._chat_panel)
+
+        right_splitter.setSizes([300, 150, 80, 250])
         main_splitter.addWidget(right_splitter)
         main_splitter.setSizes([850, 350])
         main_layout.addWidget(main_splitter)
@@ -295,3 +307,45 @@ class MainWindow(QMainWindow):
                     r.translated_text = new_text
                     self._overlay_manager.update_region(r)
                     break
+
+    # --- 채팅 패널 슬롯 ---
+
+    @Slot(str)
+    def _on_chat_message(self, text: str) -> None:
+        cwd = Path.cwd()
+        parsed = self._msg_parser.parse(text, cwd)
+        chat_config = {
+            "llm_provider": self._config.get("chat", "llm_provider", default="anthropic"),
+            "llm_model": self._config.get("chat", "llm_model", default="claude-haiku-4-5-20251001"),
+            "api_key": self._config.get_api_key("ANTHROPIC_API_KEY"),
+        }
+        self._batch_worker = BatchWorker(
+            parsed=parsed,
+            session=self._chat_session,
+            pipeline=self._pipeline,
+            chat_config=chat_config,
+            parent=self,
+        )
+        self._batch_worker.agent_message.connect(self._on_agent_message)
+        self._batch_worker.job_progress.connect(
+            lambda name, cur, total: self._chat_panel.update_progress(cur, total)
+        )
+        self._batch_worker.batch_completed.connect(self._on_batch_completed)
+        self._batch_worker.finished.connect(lambda: self._chat_panel.set_batch_running(False))
+        self._chat_panel.set_batch_running(True)
+        self._batch_worker.start()
+
+    @Slot(str)
+    def _on_agent_message(self, message: str) -> None:
+        self._chat_panel.add_message("assistant", message)
+
+    @Slot(object)
+    def _on_batch_completed(self, result: object) -> None:
+        # last_directory 업데이트
+        if hasattr(result, "output_dir"):
+            self._chat_session = self._chat_session.add_message("system", "batch_complete")
+
+    def _cancel_batch(self) -> None:
+        if self._batch_worker and self._batch_worker.isRunning():
+            self._batch_worker.cancel()
+            self._chat_panel.add_message("system", "배치 취소 요청됨")

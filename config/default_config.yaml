@@ -29,9 +29,9 @@ rendering:
 
 api_keys:
   # 환경변수 우선. 없을 경우 여기서 로드 (보안 주의)
-  deepl: ""  # 또는 env: DEEPL_API_KEY
-  google: ""  # 또는 env: GOOGLE_API_KEY
-  xai: ""  # 또는 env: XAI_API_KEY
+  deepl: env: DEEPL_API_KEY  # 또는 env: DEEPL_API_KEY
+  google: env: GOOGLE_API_KEY  # 또는 env: GOOGLE_API_KEY
+  xai: env: XAI_API_KEY  # 또는 env: XAI_API_KEY
   anthropic: ""  # 또는 env: ANTHROPIC_API_KEY
   papago_client_id: ""
   papago_client_secret: ""
@@ -50,3 +50,10 @@ export:
   default_format: "png"  # png | jpg | webp
   jpg_quality: 95
   output_dir: ""  # 비어 있으면 원본 파일과 같은 디렉토리
+
+chat:
+  enabled: true
+  llm_provider: "anthropic"      # anthropic | openai | ollama | grok
+  llm_model: "claude-haiku-4-5-20251001"  # 경량 모델 — 의도 파악 전용
+  max_history: 50
+  default_output_suffix: "_translated"

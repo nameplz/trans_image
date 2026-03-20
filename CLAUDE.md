@@ -15,10 +15,12 @@
 ## 핵심 아키텍처 원칙
 
 1. **플러그인 분리**: OCR / 번역 / 에이전트 각각 별도 ABC (추상 기반 클래스)
-2. **에이전트 ≠ 번역기**: 에이전트는 OCR 결과 분석·컨텍스트 생성·검증만 담당.
-   번역 API 직접 호출 금지 — 파이프라인을 통해 번역 플러그인에 위임.
-3. **비동기 우선**: 모든 플러그인 메서드는 async. QThread 내부에서 asyncio 루프 실행.
-4. **GUI 응답성**: 처리 중 UI 블로킹 금지. PipelineWorker(QThread) + Signal 패턴 사용.
+2. **두 가지 에이전트 역할 구분** (혼동 금지):
+   - **대화형 에이전트** (`src/chat/chat_agent.py`): 사용자와 텍스트로 소통. 자연어 명령 해석 → 배치 처리 트리거. 플러그인 아님.
+   - **번역 보조 에이전트** (`src/plugins/agents/`): 파이프라인 내부에서 OCR 보정·컨텍스트 생성·번역 검증 담당. `AbstractAgentPlugin` 플러그인.
+3. **에이전트 ≠ 번역기**: 번역 보조 에이전트는 번역 API 직접 호출 금지 — 파이프라인을 통해 번역 플러그인에 위임.
+4. **비동기 우선**: 모든 플러그인 메서드는 async. QThread 내부에서 asyncio 루프 실행.
+5. **GUI 응답성**: 처리 중 UI 블로킹 금지. PipelineWorker(QThread) + Signal 패턴 사용.
 
 ## 디렉토리 구조
 
@@ -29,6 +31,10 @@ trans_image/
 ├── config/
 │   ├── default_config.yaml
 │   └── plugins.yaml        # 플러그인 레지스트리 (활성화/비활성화, API 키 참조)
+├── docs/
+│   ├── pipeline.md         # 파이프라인 상세 설명
+│   ├── plugins.md          # 플러그인 개발 가이드
+│   └── chat_interface.md   # 대화형 에이전트 인터페이스 사양
 ├── src/
 │   ├── core/               # pipeline.py, plugin_manager.py, config_manager.py
 │   ├── models/             # TextRegion, ProcessingJob, TranslationResult 데이터클래스
@@ -36,10 +42,15 @@ trans_image/
 │   │   ├── base/           # ABC: PluginBase, AbstractOCRPlugin, AbstractTranslatorPlugin, AbstractAgentPlugin
 │   │   ├── ocr/            # easyocr_plugin.py, paddleocr_plugin.py
 │   │   ├── translators/    # deepl, gemini, grok, papago, ollama
-│   │   └── agents/         # claude_agent, openai_agent, ollama_agent
+│   │   └── agents/         # claude_agent, openai_agent, ollama_agent  ← 번역 보조 에이전트
+│   ├── chat/               # 대화형 에이전트 인터페이스 (사용자 ↔ AI 소통)
+│   │   ├── chat_agent.py   # 대화형 에이전트 (자연어 명령 해석, 배치 처리 지시)
+│   │   ├── conversation.py # 대화 세션 관리 (메시지 히스토리, 상태)
+│   │   ├── message_parser.py  # @경로 멘션 파싱
+│   │   └── batch_processor.py # 디렉토리 일괄 처리 오케스트레이션
 │   ├── services/           # ocr_service, language_service, inpainting_service, rendering_service, font_service
 │   ├── gui/
-│   │   ├── widgets/        # image_viewer, region_overlay, region_editor, comparison_view 등
+│   │   ├── widgets/        # image_viewer, region_overlay, region_editor, comparison_view, chat_panel 등
 │   │   ├── dialogs/
 │   │   └── workers/        # pipeline_worker.py (QThread ↔ asyncio 브릿지)
 │   └── utils/
@@ -50,6 +61,58 @@ trans_image/
     ├── unit/
     └── integration/
 ```
+
+## 대화형 에이전트 인터페이스
+
+> 상세 사양: [`docs/chat_interface.md`](docs/chat_interface.md)
+
+사용자가 GUI 채팅 패널에서 AI 에이전트와 텍스트로 소통하여 번역 작업을 지시하는 인터페이스.
+
+### @경로 멘션 입력 방식
+
+Claude Code의 `@파일` 멘션과 동일한 방식으로 디렉토리 경로를 제공한다.
+
+```
+사용자: @C:/Users/YH/manhwa 이 폴더 이미지들 한국어로 번역해줘
+사용자: @./screenshots DeepL로 영어 번역하고 새 폴더에 저장해줘
+사용자: @/tmp/images 번역기는 gemini, 에이전트는 claude 써줘
+```
+
+- `@경로` 토큰은 `message_parser.py`가 파싱하여 절대 경로로 정규화
+- 경로에 공백이 있으면 따옴표로 감싸기: `@"C:/My Images/folder"`
+- 디렉토리 안의 지원 이미지 확장자: `.png`, `.jpg`, `.jpeg`, `.webp`, `.bmp`, `.tiff`
+
+### 배치 처리 흐름
+
+```
+사용자 메시지 수신
+    → message_parser: @경로 추출 + 자연어 파라미터 파싱
+        (target_lang, translator_id, agent_id, output_dir 등)
+    → chat_agent: LLM에 의도 확인 및 파라미터 보완 요청
+    → batch_processor: 디렉토리 내 이미지 목록 수집
+    → 각 이미지에 대해 ProcessingJob 생성 → Pipeline.run()
+    → 결과 이미지를 출력 디렉토리에 저장
+    → chat_agent: 완료 메시지를 자연어로 사용자에게 전달
+```
+
+### 출력 디렉토리 규칙
+
+| 입력 | 기본 출력 |
+|------|---------|
+| `@/path/to/images` | `/path/to/images_translated/` |
+| `@./relative/dir` | `./relative/dir_translated/` |
+
+사용자가 `--output` 또는 자연어로 다른 경로를 지정하면 해당 경로 우선.
+
+### chat_agent vs 번역 보조 에이전트 역할 비교
+
+| 구분 | 대화형 에이전트 (`src/chat/`) | 번역 보조 에이전트 (`src/plugins/agents/`) |
+|------|------------------------------|------------------------------------------|
+| 역할 | 사용자 명령 해석, 배치 처리 지시 | 파이프라인 내 OCR 보정·컨텍스트·검증 |
+| 호출 주체 | 사용자 (채팅 패널) | Pipeline (자동, 선택적) |
+| 구현 위치 | `src/chat/chat_agent.py` | `src/plugins/agents/*.py` |
+| 플러그인 여부 | 아님 (core service) | `AbstractAgentPlugin` 구현체 |
+| LLM 사용 목적 | 자연어 이해, 상태 보고 | OCR 교정, 컨텍스트 생성, 번역 검증 |
 
 ## 지원 플러그인
 

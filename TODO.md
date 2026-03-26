@@ -47,16 +47,16 @@ _없음_
 
 ## 📌 대기 중
 
-- [ ] **[M-1] ChatMessage.metadata 불완전한 불변성** `src/chat/conversation.py:17`
-  - `frozen=True`여도 `dict` 내부는 뮤테이션 가능 → `frozenset` 또는 주석으로 제한 명시
+- [x] **[M-1] ChatMessage.metadata 불완전한 불변성** `src/chat/conversation.py:17`
+  - `MappingProxyType`으로 래핑, `__post_init__`에서 dict 자동 변환
 
-- [ ] **[M-2] 비재귀 스캔 사용자 안내 부재** `src/chat/batch_processor.py:56`
-  - 서브폴더 이미지는 스캔되지 않음 — 에러 메시지에 "하위 폴더 미포함" 안내 추가
+- [x] **[M-2] 비재귀 스캔 사용자 안내 부재** `src/chat/batch_processor.py:56`
+  - docstring에 "하위 폴더 미포함" 명시, batch_worker.py 빈 이미지 메시지에 안내 추가
 
-- [ ] **[M-3] 테스트 커버리지 보강**
-  - `src/chat/chat_agent.py` — `resolve_params` 분기 테스트 없음
-  - `src/gui/workers/batch_worker.py` — `_run_batch` 에러 경로 테스트 없음
-  - `src/gui/widgets/chat_panel.py` — 테스트 없음
+- [x] **[M-3] 테스트 커버리지 보강**
+  - `tests/unit/test_chat_agent.py` — `resolve_params` 5개 분기 테스트 추가
+  - `tests/unit/test_batch_worker.py` — `_run_batch` 에러 경로 4개 테스트 추가
+  - `tests/unit/test_chat_panel.py` — 시그널·자동완성 8개 테스트 추가
 
 - [ ] **Phase 5~7 GUI 고급 기능 구현**
 - [ ] **테스트 커버리지 80%+ 달성**
@@ -67,8 +67,8 @@ _없음_
 
 ## 🐛 버그
 
-- [ ] `src/models/text_region.py` `BoundingBox.to_xyxy()` — y2 계산 오프바이원 오류
-  - `tests/unit/test_models.py::TestBoundingBox::test_to_xyxy` 실패 중
+- [x] `src/models/text_region.py` `BoundingBox.to_xyxy()` — y2 계산 오프바이원 오류
+  - 확인 결과 테스트 통과 중 (이미 해결됨)
 
 ---
 

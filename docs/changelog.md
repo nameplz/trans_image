@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-03-26: [M-1][M-2][M-3][Bug] 대기 중 이슈 병렬 처리
+
+- **[M-1]** `src/chat/conversation.py`: `ChatMessage.metadata`를 `MappingProxyType`으로 래핑하여 불변성 강화
+  - `from types import MappingProxyType` 추가, `__post_init__`에서 `dict` 인자를 자동 변환
+- **[M-2]** `src/chat/batch_processor.py`: `scan_directory` docstring에 "하위 폴더 미포함" 명시
+  - `src/gui/workers/batch_worker.py`: 이미지 없을 때 메시지에 "하위 폴더 미포함" 안내 추가
+- **[M-3]** 테스트 커버리지 보강 — 3개 파일 신규 (17개 테스트 추가)
+  - `tests/unit/test_chat_agent.py`: `resolve_params` 5개 분기 테스트
+  - `tests/unit/test_batch_worker.py`: `_run_batch` 에러 경로 4개 테스트
+  - `tests/unit/test_chat_panel.py`: 시그널·자동완성 로직 8개 테스트
+- **[Bug]** `BoundingBox.to_xyxy()` 테스트 확인 → 이미 정상 (통과 중)
+- 전체: 154개 중 152개 통과 (2개는 macOS에서 Windows 경로 테스트, 기존 사전 실패)
+
 ## 2026-03-26: [H-5] last_directory 미갱신 수정
 
 - `src/gui/main_window.py` `_on_batch_completed`: `self._chat_session.last_directory = result.output_dir` 추가

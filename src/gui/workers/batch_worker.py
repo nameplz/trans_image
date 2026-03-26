@@ -86,7 +86,8 @@ class BatchWorker(QThread):
 
         if not images:
             self.agent_message.emit(
-                "지원하는 이미지 파일이 없습니다. (지원: png, jpg, jpeg, webp, bmp, tiff)"
+                "지원하는 이미지 파일이 없습니다. (지원: png, jpg, jpeg, webp, bmp, tiff)\n"
+                "※ 하위 폴더의 이미지는 포함되지 않습니다."
             )
             return
 

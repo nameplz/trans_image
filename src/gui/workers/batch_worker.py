@@ -44,14 +44,19 @@ class BatchWorker(QThread):
         self._pipeline = pipeline
         self._chat_config = chat_config
         self._cancelled = False
+        self._loop: asyncio.AbstractEventLoop | None = None
 
     def cancel(self) -> None:
         """실행 중인 배치를 취소 요청."""
         self._cancelled = True
+        if self._loop and self._loop.is_running():
+            for task in asyncio.all_tasks(self._loop):
+                task.cancel()
 
     def run(self) -> None:
         """QThread 진입점 — 새 asyncio 루프에서 배치 실행."""
         loop = asyncio.new_event_loop()
+        self._loop = loop
         asyncio.set_event_loop(loop)
         try:
             loop.run_until_complete(self._run_batch())
@@ -59,6 +64,7 @@ class BatchWorker(QThread):
             logger.error("배치 워커 예외: %s", exc)
             self.error_occurred.emit(str(exc))
         finally:
+            self._loop = None
             loop.close()
 
     async def _run_batch(self) -> None:
@@ -93,16 +99,22 @@ class BatchWorker(QThread):
         jobs = processor.create_batch_jobs(images, resolved)
 
         # 배치 실행
-        def on_progress(name: str, current: int, total: int) -> None:
-            if not self._cancelled:
-                self.job_progress.emit(name, current, total)
-                self.agent_message.emit(agent.format_progress(name, current, total))
+        def on_progress(name: str, current: int, total: int) -> bool:
+            if self._cancelled:
+                return False
+            self.job_progress.emit(name, current, total)
+            self.agent_message.emit(agent.format_progress(name, current, total))
+            return True
 
         result = await processor.run_batch(
             jobs,
             self._pipeline,
             on_progress=on_progress,
         )
+
+        # 취소된 경우 완료 신호 스킵
+        if self._cancelled:
+            return
 
         # 완료 요약
         self.agent_message.emit(agent.format_result(result))

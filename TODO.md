@@ -31,9 +31,9 @@ _없음_
   - 문제: 객체 생성 후 필드 직접 수정 — 프로젝트 불변 패턴 위반
   - 수정: `ProcessingJob(...)` 생성자에 모든 필드를 한 번에 전달, `src/models/` 패키지 신규 생성
 
-- [ ] **[H-3] 취소 버튼 미작동** `src/gui/workers/batch_worker.py:96-104`
+- [x] **[H-3] 취소 버튼 미작동** `src/gui/workers/batch_worker.py:96-104`
   - 문제: `_cancelled=True`로 설정해도 `run_batch` 루프가 계속 실행됨
-  - 수정: `asyncio.Event`를 `run_batch`에 전달하거나 콜백이 `False` 반환 시 루프 `break`
+  - 수정: `ProgressCallback` 반환값 `bool | None` 추가, `False` 반환 시 루프 `break`; `cancel()`에 asyncio 태스크 취소 추가
 
 - [ ] **[H-4] 이전 BatchWorker 미정리** `src/gui/main_window.py:310-336`
   - 문제: 이전 워커가 실행 중일 때 새 메시지가 오면 시그널 중복 발행

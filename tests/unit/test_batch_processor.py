@@ -358,3 +358,44 @@ class TestRunBatch:
         assert result.total == 0
         assert result.completed == 0
         assert result.failed == 0
+
+    @pytest.mark.asyncio
+    async def test_cancels_mid_batch(self, tmp_path):
+        """콜백이 False 반환 시 나머지 잡이 실행되지 않아야 한다."""
+        images = [tmp_path / f"img{i}.png" for i in range(5)]
+        for img in images:
+            img.touch()
+        jobs = BatchProcessor().create_batch_jobs(images, make_parsed(tmp_path))
+
+        mock_pipeline = AsyncMock()
+        mock_pipeline.run = AsyncMock(side_effect=lambda job, **kw: job.complete())
+
+        call_count = 0
+
+        def on_progress(name: str, current: int, total: int) -> bool:
+            nonlocal call_count
+            call_count += 1
+            return False if current == 2 else True  # 2번째 완료 후 취소
+
+        result = await BatchProcessor().run_batch(
+            jobs, mock_pipeline, on_progress=on_progress
+        )
+        assert call_count == 2
+        assert mock_pipeline.run.call_count == 2
+
+    @pytest.mark.asyncio
+    async def test_none_return_does_not_cancel(self, tmp_path):
+        """콜백이 None 반환 시 루프가 계속돼야 한다 (하위 호환성)."""
+        images = [tmp_path / f"img{i}.png" for i in range(3)]
+        for img in images:
+            img.touch()
+        jobs = BatchProcessor().create_batch_jobs(images, make_parsed(tmp_path))
+
+        mock_pipeline = AsyncMock()
+        mock_pipeline.run = AsyncMock(side_effect=lambda job, **kw: job.complete())
+
+        result = await BatchProcessor().run_batch(
+            jobs, mock_pipeline, on_progress=lambda *_: None
+        )
+        assert result.total == 3
+        assert result.completed == 3

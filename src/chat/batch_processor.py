@@ -17,7 +17,7 @@ _SUPPORTED_EXTENSIONS: frozenset[str] = frozenset(
     {".png", ".jpg", ".jpeg", ".webp", ".bmp", ".tiff"}
 )
 
-ProgressCallback = Callable[[str, int, int], None]  # (image_name, current, total)
+ProgressCallback = Callable[[str, int, int], "bool | None"]  # (image_name, current, total) → False면 루프 중단
 
 
 @dataclass(frozen=True)
@@ -143,7 +143,8 @@ class BatchProcessor:
                 failed_files.append((job.input_path, str(exc)))
                 logger.error("[%d/%d] 예외: %s — %s", idx, total, job.input_path.name, exc)
 
-            on_progress(job.input_path.name, idx, total)
+            if on_progress(job.input_path.name, idx, total) is False:
+                break
 
         return BatchResult(
             total=total,

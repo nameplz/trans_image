@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-03-26: [H-3] 취소 버튼 미작동 수정
+
+- `src/chat/batch_processor.py`: `ProgressCallback` 반환 타입 `None` → `bool | None`; `on_progress()` 반환값이 `False`이면 루프 `break`
+- `src/gui/workers/batch_worker.py`: `on_progress` 클로저가 취소 시 `False` 반환; `cancel()`에 `asyncio.all_tasks().cancel()` 추가; `self._loop` 필드로 루프 참조 보관; 취소 시 완료 신호 스킵
+- `tests/unit/test_batch_processor.py`: 취소 테스트 2개 추가 (`test_cancels_mid_batch`, `test_none_return_does_not_cancel`)
+- 참고 파일: `src/chat/batch_processor.py`, `src/gui/workers/batch_worker.py`, `tests/unit/test_batch_processor.py`
+
+
+
 ## 2026-03-26: [H-1] 경로 순회 취약점 + [H-2] ProcessingJob 뮤테이션 수정
 
 - `src/chat/message_parser.py` `_normalize_path`: `os.path.normpath()`로 `..` 정규화 후 cwd 범위 벗어나면 `ValueError` 발생

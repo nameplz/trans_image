@@ -17,9 +17,9 @@ _없음_
 
 ### CRITICAL
 
-- [ ] **[C-1] YAML 파싱 오류** `config/default_config.yaml:32-34`
+- [x] **[C-1] YAML 파싱 오류** `config/default_config.yaml:32-34`
   - 문제: `deepl: env: DEEPL_API_KEY` 형식이 문자열 리터럴로 파싱됨 → 런타임 인증 오류
-  - 수정: 빈 문자열(`""`)로 되돌리거나 환경변수 참조 구조를 코드와 함께 설계
+  - 수정: 빈 문자열(`""`)로 복원 + `get_api_key()` 비문자열 방어 코드 추가
 
 ### HIGH
 

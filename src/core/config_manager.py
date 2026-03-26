@@ -75,13 +75,29 @@ class ConfigManager:
     # --- API 키 조회 ---
 
     def get_api_key(self, env_var: str, config_path: tuple[str, ...] | None = None) -> str:
-        """환경변수 우선, 없으면 config.yaml의 api_keys 섹션 참조."""
+        """환경변수 우선, 없으면 config.yaml의 api_keys 섹션 참조.
+
+        YAML 값이 str이 아닌 경우(예: 잘못된 YAML로 dict가 파싱된 경우) 경고를
+        로그하고 빈 문자열을 반환한다.
+        """
         value = os.environ.get(env_var, "")
         if value:
             return value
         if config_path:
-            return self.get(*config_path, default="")
-        return self.get("api_keys", env_var.lower().replace("_api_key", ""), default="")
+            raw = self.get(*config_path, default="")
+        else:
+            raw = self.get("api_keys", env_var.lower().replace("_api_key", ""), default="")
+        if not isinstance(raw, str):
+            logger.warning(
+                "api_keys.%s 값이 str이 아닌 %s 타입입니다 (YAML 파싱 오류 가능성). "
+                "빈 문자열로 대체합니다. 환경변수 %s 를 설정하거나 "
+                "config/default_config.yaml 의 해당 키를 빈 문자열(\"\")로 수정하세요.",
+                env_var.lower().replace("_api_key", ""),
+                type(raw).__name__,
+                env_var,
+            )
+            return ""
+        return raw
 
     # --- 플러그인 레지스트리 조회 ---
 

@@ -29,9 +29,10 @@ rendering:
 
 api_keys:
   # 환경변수 우선. 없을 경우 여기서 로드 (보안 주의)
-  deepl: env: DEEPL_API_KEY  # 또는 env: DEEPL_API_KEY
-  google: env: GOOGLE_API_KEY  # 또는 env: GOOGLE_API_KEY
-  xai: env: XAI_API_KEY  # 또는 env: XAI_API_KEY
+  # 환경변수 이름: DEEPL_API_KEY / GOOGLE_API_KEY / XAI_API_KEY
+  deepl: ""
+  google: ""
+  xai: ""
   anthropic: ""  # 또는 env: ANTHROPIC_API_KEY
   papago_client_id: ""
   papago_client_secret: ""

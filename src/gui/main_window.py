@@ -312,6 +312,10 @@ class MainWindow(QMainWindow):
 
     @Slot(str)
     def _on_chat_message(self, text: str) -> None:
+        if self._batch_worker is not None and self._batch_worker.isRunning():
+            self._chat_panel.add_message("system", "이전 배치가 실행 중입니다. 완료 후 다시 시도해 주세요.")
+            return
+
         cwd = Path.cwd()
         parsed = self._msg_parser.parse(text, cwd)
         chat_config = {
@@ -344,6 +348,7 @@ class MainWindow(QMainWindow):
         # last_directory 업데이트
         if hasattr(result, "output_dir"):
             self._chat_session = self._chat_session.add_message("system", "batch_complete")
+        self._batch_worker = None
 
     def _cancel_batch(self) -> None:
         if self._batch_worker and self._batch_worker.isRunning():

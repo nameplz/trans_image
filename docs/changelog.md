@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-03-26: [H-4] 이전 BatchWorker 미정리 수정
+
+- `src/gui/main_window.py` `_on_chat_message`: 진입 시 `isRunning()` 확인, 실행 중이면 안내 메시지 후 얼리 리턴
+- `src/gui/main_window.py` `_on_batch_completed`: 완료 후 `self._batch_worker = None` 참조 해제
+- `tests/unit/test_main_window.py`: 신규 생성 — 이중 메시지 시나리오 4개 테스트 (4/4 통과)
+- 참고 파일: `src/gui/main_window.py`, `tests/unit/test_main_window.py`
+
+
+
 ## 2026-03-26: [H-3] 취소 버튼 미작동 수정
 
 - `src/chat/batch_processor.py`: `ProgressCallback` 반환 타입 `None` → `bool | None`; `on_progress()` 반환값이 `False`이면 루프 `break`

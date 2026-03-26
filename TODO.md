@@ -35,9 +35,9 @@ _없음_
   - 문제: `_cancelled=True`로 설정해도 `run_batch` 루프가 계속 실행됨
   - 수정: `ProgressCallback` 반환값 `bool | None` 추가, `False` 반환 시 루프 `break`; `cancel()`에 asyncio 태스크 취소 추가
 
-- [ ] **[H-4] 이전 BatchWorker 미정리** `src/gui/main_window.py:310-336`
+- [x] **[H-4] 이전 BatchWorker 미정리** `src/gui/main_window.py:310-336`
   - 문제: 이전 워커가 실행 중일 때 새 메시지가 오면 시그널 중복 발행
-  - 수정: `_on_chat_message` 진입 시 `isRunning()` 확인 후 얼리 리턴 또는 이전 워커 disconnect + wait
+  - 수정: `_on_chat_message` 진입 시 `isRunning()` 확인 후 얼리 리턴; `_on_batch_completed`에서 `_batch_worker = None` 초기화
 
 - [ ] **[H-5] last_directory 미갱신** `src/gui/main_window.py:342-344`
   - 문제: `_on_batch_completed`에서 `session.last_directory`가 갱신되지 않아 경로 재사용 미동작

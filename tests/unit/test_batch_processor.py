@@ -177,6 +177,65 @@ class TestCreateBatchJobs:
         jobs = BatchProcessor().create_batch_jobs([], make_parsed(tmp_path))
         assert jobs == []
 
+    def test_no_post_construction_mutation(self, tmp_path):
+        """ProcessingJob 생성 후 설정 필드를 직접 수정하지 않아야 한다.
+
+        create_batch_jobs 는 모든 설정 필드를 생성자에 한 번에 전달해야 한다.
+        __setattr__ 을 추적해 'translator_plugin_id', 'agent_plugin_id', 'use_agent' 에
+        __init__ 이후 쓰기가 발생하면 테스트를 실패시킨다.
+        """
+        img = tmp_path / "img.png"
+        img.touch()
+        parsed = make_parsed(
+            tmp_path,
+            translator_id="gemini",
+            agent_id="openai",
+            use_agent=True,
+        )
+
+        _CONFIG_FIELDS = {"translator_plugin_id", "agent_plugin_id", "use_agent"}
+        post_init_mutations: list[str] = []
+        _init_done: set[int] = set()
+        original_setattr = ProcessingJob.__setattr__
+
+        def tracking_setattr(self_job, name: str, value):  # noqa: ANN001
+            if id(self_job) in _init_done and name in _CONFIG_FIELDS:
+                post_init_mutations.append(name)
+            original_setattr(self_job, name, value)
+
+        original_init = ProcessingJob.__init__
+
+        def tracking_init(self_job, **kwargs):  # noqa: ANN001
+            original_init(self_job, **kwargs)
+            _init_done.add(id(self_job))
+
+        import src.models.processing_job as _pj_module
+        original_cls_setattr = _pj_module.ProcessingJob.__setattr__
+
+        ProcessingJob.__setattr__ = tracking_setattr
+        ProcessingJob.__init__ = tracking_init
+        try:
+            BatchProcessor().create_batch_jobs([img], parsed)
+        finally:
+            ProcessingJob.__setattr__ = original_cls_setattr
+            ProcessingJob.__init__ = original_init
+
+        assert post_init_mutations == [], (
+            f"create_batch_jobs 가 생성자 대신 직접 수정한 필드: {post_init_mutations}. "
+            "모든 설정 필드는 ProcessingJob(...) 생성자에 전달해야 합니다."
+        )
+
+    def test_no_mutation_with_all_none_optionals(self, tmp_path):
+        """translator_id, agent_id, use_agent 가 모두 None 일 때 기본값이 유지돼야 한다."""
+        img = tmp_path / "img.png"
+        img.touch()
+        parsed = make_parsed(tmp_path)  # translator_id=None, agent_id=None, use_agent=None
+        jobs = BatchProcessor().create_batch_jobs([img], parsed)
+        assert len(jobs) == 1
+        # 기본값 확인
+        assert jobs[0].translator_plugin_id == "deepl"
+        assert jobs[0].use_agent is True  # ProcessingJob default
+
 
 # ─── run_batch ────────────────────────────────────────────────────────────────
 

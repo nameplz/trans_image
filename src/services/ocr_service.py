@@ -22,8 +22,7 @@ class OCRService:
         for idx, region in enumerate(sorted_regions):
             if region.reading_order == 0:
                 region.reading_order = idx + 1
-            if region.confidence < 0.5:
-                region.is_low_confidence = True
+            # is_low_confidence 는 confidence < 0.5 로 자동 계산되는 프로퍼티이므로 별도 설정 불필요
         logger.debug("OCR 정규화: %d → %d 영역", len(regions), len(sorted_regions))
         return sorted_regions
 

@@ -23,13 +23,13 @@ _없음_
 
 ### HIGH
 
-- [ ] **[H-1] 경로 순회 취약점** `src/chat/message_parser.py` `_normalize_path`
+- [x] **[H-1] 경로 순회 취약점** `src/chat/message_parser.py` `_normalize_path`
   - 문제: `@../../../etc/passwd` 같은 경로를 무제한 허용
-  - 수정: `scan_directory`에서 `path.is_dir()` 검증 추가, 필요 시 허용 루트 범위 검사
+  - 수정: `_normalize_path`에서 cwd 범위 벗어나면 `ValueError`, `scan_directory`에 `is_dir()` 검증 추가
 
-- [ ] **[H-2] ProcessingJob 뮤테이션** `src/chat/batch_processor.py:87-93`
+- [x] **[H-2] ProcessingJob 뮤테이션** `src/chat/batch_processor.py:87-93`
   - 문제: 객체 생성 후 필드 직접 수정 — 프로젝트 불변 패턴 위반
-  - 수정: `ProcessingJob(...)` 생성자에 모든 필드를 한 번에 전달
+  - 수정: `ProcessingJob(...)` 생성자에 모든 필드를 한 번에 전달, `src/models/` 패키지 신규 생성
 
 - [ ] **[H-3] 취소 버튼 미작동** `src/gui/workers/batch_worker.py:96-104`
   - 문제: `_cancelled=True`로 설정해도 `run_batch` 루프가 계속 실행됨

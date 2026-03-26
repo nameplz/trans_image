@@ -53,6 +53,9 @@ class BatchProcessor:
         if not path.exists():
             raise FileNotFoundError(f"경로를 찾을 수 없습니다: {path}")
 
+        if not path.is_dir():
+            raise NotADirectoryError(f"디렉토리가 아닙니다: {path}")
+
         images = [
             f for f in path.iterdir()
             if f.is_file() and f.suffix.lower() in _SUPPORTED_EXTENSIONS
@@ -79,17 +82,19 @@ class BatchProcessor:
 
         jobs = []
         for img_path in image_paths:
+            extra: dict = {}
+            if parsed.translator_id is not None:
+                extra["translator_plugin_id"] = parsed.translator_id
+            if parsed.agent_id is not None:
+                extra["agent_plugin_id"] = parsed.agent_id
+            if parsed.use_agent is not None:
+                extra["use_agent"] = parsed.use_agent
             job = ProcessingJob(
                 input_path=img_path,
                 output_path=base_out / img_path.name,
                 target_lang=parsed.target_lang or "ko",
+                **extra,
             )
-            if parsed.translator_id is not None:
-                job.translator_plugin_id = parsed.translator_id
-            if parsed.agent_id is not None:
-                job.agent_plugin_id = parsed.agent_id
-            if parsed.use_agent is not None:
-                job.use_agent = parsed.use_agent
             jobs.append(job)
         return jobs
 

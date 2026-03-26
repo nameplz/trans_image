@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pytest
 
+from src.chat.batch_processor import BatchProcessor
 from src.chat.conversation import ParsedMessage
 from src.chat.message_parser import MessageParser
 
@@ -31,8 +32,9 @@ class TestPathParsing:
         assert result.directory_path == cwd / "images"
 
     def test_relative_parent_path(self, parser, cwd):
-        result = parser.parse("@../other 번역해줘", cwd)
-        assert result.directory_path == cwd / "../other"
+        # 한 단계 위 경로는 cwd 내부가 아니므로 ValueError 발생
+        with pytest.raises(ValueError, match="경로 순회"):
+            parser.parse("@../other 번역해줘", cwd)
 
     def test_double_quoted_path_with_spaces(self, parser, cwd):
         result = parser.parse('@"./my images folder" 번역해줘', cwd)
@@ -235,3 +237,79 @@ class TestComplexCommands:
         result = parser.parse("", cwd)
         assert result.directory_path is None
         assert result.target_lang is None
+
+
+# ─── 경로 순회(Path Traversal) 보안 ─────────────────────────────────────────
+
+class TestPathTraversalSecurity:
+    """_normalize_path 가 cwd 밖으로 나가는 경로를 거부하는지 검증."""
+
+    def test_deep_traversal_raises(self, parser, cwd):
+        """@../../../etc/passwd 는 cwd 밖이므로 ValueError."""
+        with pytest.raises(ValueError, match="경로 순회"):
+            parser.parse("@../../../etc/passwd 번역해줘", cwd)
+
+    def test_two_level_traversal_raises(self, parser, cwd):
+        """@../../secret 는 cwd 밖이므로 ValueError."""
+        with pytest.raises(ValueError, match="경로 순회"):
+            parser.parse("@../../secret 번역해줘", cwd)
+
+    def test_one_level_traversal_raises(self, parser, cwd):
+        """@../sibling 은 cwd 바로 위이므로 ValueError."""
+        with pytest.raises(ValueError, match="경로 순회"):
+            parser.parse("@../sibling 번역해줘", cwd)
+
+    def test_traversal_with_quotes_raises(self, parser, cwd):
+        """따옴표로 감싼 순회 경로도 거부."""
+        with pytest.raises(ValueError, match="경로 순회"):
+            parser.parse('@"../../../etc/shadow" 번역해줘', cwd)
+
+    def test_disguised_traversal_raises(self, parser, cwd):
+        """./foo/../../etc/passwd 처럼 정상처럼 보이는 순회도 거부."""
+        with pytest.raises(ValueError, match="경로 순회"):
+            parser.parse("@./foo/../../etc/passwd 번역해줘", cwd)
+
+    def test_subdirectory_within_cwd_is_allowed(self, parser, cwd):
+        """cwd 내부의 하위 디렉토리는 허용."""
+        result = parser.parse("@./images 번역해줘", cwd)
+        assert result.directory_path is not None
+        assert str(result.directory_path).startswith(str(cwd))
+
+    def test_nested_subdirectory_within_cwd_is_allowed(self, parser, cwd):
+        """cwd 내부의 중첩 하위 경로도 허용."""
+        result = parser.parse("@./a/b/c 번역해줘", cwd)
+        assert result.directory_path is not None
+        assert str(result.directory_path).startswith(str(cwd))
+
+    def test_absolute_path_outside_cwd_is_allowed(self, parser, cwd):
+        """절대 경로는 cwd 제한 없이 허용 (사용자가 명시적으로 지정)."""
+        result = parser.parse("@/tmp/images 번역해줘", cwd)
+        assert result.directory_path == Path("/tmp/images")
+
+    def test_traversal_in_output_flag_raises(self, parser, cwd):
+        """--output 플래그에 포함된 순회 경로도 거부."""
+        with pytest.raises(ValueError, match="경로 순회"):
+            parser.parse("@./images --output ../../../tmp 번역해줘", cwd)
+
+    def test_exact_cwd_is_allowed(self, parser, cwd):
+        """cwd 자체를 가리키는 '.'는 허용."""
+        result = parser.parse("@. 번역해줘", cwd)
+        assert result.directory_path is not None
+
+
+# ─── BatchProcessor.scan_directory — is_dir() 검증 ───────────────────────────
+
+class TestScanDirectoryIsDir:
+    """scan_directory 에 파일 경로를 전달하면 NotADirectoryError 가 발생하는지 확인."""
+
+    def test_file_path_raises_not_a_directory(self, tmp_path):
+        """파일 경로를 전달하면 NotADirectoryError."""
+        file_path = tmp_path / "image.png"
+        file_path.touch()
+        with pytest.raises(NotADirectoryError):
+            BatchProcessor().scan_directory(file_path)
+
+    def test_directory_path_does_not_raise(self, tmp_path):
+        """실제 디렉토리를 전달하면 예외 없이 목록 반환."""
+        result = BatchProcessor().scan_directory(tmp_path)
+        assert isinstance(result, list)

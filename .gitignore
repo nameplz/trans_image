@@ -47,7 +47,7 @@ logs/
 # EasyOCR / PaddleOCR 모델 캐시
 .EasyOCR/
 .paddleocr/
-models/
+assets/models/
 
 # 테스트 결과
 .pytest_cache/

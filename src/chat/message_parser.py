@@ -1,6 +1,7 @@
 """@경로 멘션 및 파라미터 파싱."""
 from __future__ import annotations
 
+import os
 import re
 from pathlib import Path
 
@@ -45,10 +46,37 @@ _AGENT_PROVIDER_RE = re.compile(
 
 
 def _normalize_path(token: str, cwd: Path) -> Path:
-    """경로 토큰을 Path로 변환. 상대 경로는 cwd 기준으로 결합."""
+    """경로 토큰을 Path로 변환. 상대 경로는 cwd 기준으로 결합.
+
+    상대 경로가 cwd 밖으로 탈출(경로 순회)하는 경우 ValueError를 발생시킨다.
+    판정은 파일시스템을 건드리지 않는 순수 어휘(lexical) 정규화로 수행한다.
+    절대 경로는 사용자가 명시적으로 지정한 것으로 간주하여 순회 검사를 건너뛴다.
+
+    Args:
+        token: @멘션에서 추출한 경로 토큰
+        cwd: 상대 경로 기준 디렉토리 (절대 경로여야 함)
+
+    Raises:
+        ValueError: 경로 순회 공격이 감지된 경우
+    """
     p = Path(token)
     if p.is_absolute():
         return p
+
+    combined = cwd / p
+    # os.path.normpath 로 '..' 을 순수 어휘 방식으로 제거
+    normalized = Path(os.path.normpath(combined))
+    cwd_normalized = Path(os.path.normpath(cwd))
+
+    # 정규화된 경로가 cwd 내부(혹은 cwd 자신)인지 확인
+    try:
+        normalized.relative_to(cwd_normalized)
+    except ValueError:
+        raise ValueError(
+            f"경로 순회 공격이 감지되었습니다: '{token}' → '{normalized}' "
+            f"(허용 루트: '{cwd_normalized}')"
+        )
+
     return cwd / p
 
 

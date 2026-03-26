@@ -348,6 +348,7 @@ class MainWindow(QMainWindow):
         # last_directory 업데이트
         if hasattr(result, "output_dir"):
             self._chat_session = self._chat_session.add_message("system", "batch_complete")
+            self._chat_session.last_directory = result.output_dir
         self._batch_worker = None
 
     def _cancel_batch(self) -> None:

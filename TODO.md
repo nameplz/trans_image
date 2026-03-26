@@ -39,9 +39,9 @@ _없음_
   - 문제: 이전 워커가 실행 중일 때 새 메시지가 오면 시그널 중복 발행
   - 수정: `_on_chat_message` 진입 시 `isRunning()` 확인 후 얼리 리턴; `_on_batch_completed`에서 `_batch_worker = None` 초기화
 
-- [ ] **[H-5] last_directory 미갱신** `src/gui/main_window.py:342-344`
+- [x] **[H-5] last_directory 미갱신** `src/gui/main_window.py:342-344`
   - 문제: `_on_batch_completed`에서 `session.last_directory`가 갱신되지 않아 경로 재사용 미동작
-  - 수정: 완료 후 `self._chat_session.last_directory = result.output_dir.parent` 설정
+  - 수정: `self._chat_session.last_directory = result.output_dir` 추가
 
 ---
 

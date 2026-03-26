@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-03-26: [H-5] last_directory 미갱신 수정
+
+- `src/gui/main_window.py` `_on_batch_completed`: `self._chat_session.last_directory = result.output_dir` 추가
+- `tests/unit/test_main_window.py`: `TestOnBatchCompleted`에 테스트 2개 추가 (6/6 통과)
+- 참고 파일: `src/gui/main_window.py`, `src/chat/conversation.py`
+
+
+
 ## 2026-03-26: [H-4] 이전 BatchWorker 미정리 수정
 
 - `src/gui/main_window.py` `_on_chat_message`: 진입 시 `isRunning()` 확인, 실행 중이면 안내 메시지 후 얼리 리턴

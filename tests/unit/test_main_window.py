@@ -98,3 +98,26 @@ class TestOnBatchCompleted:
         window._on_batch_completed(result)
 
         assert window._batch_worker is None
+
+    def test_updates_last_directory_after_completion(self, qtbot):
+        """배치 완료 후 _chat_session.last_directory가 result.output_dir로 갱신되어야 한다."""
+        from pathlib import Path
+        window = make_main_window(qtbot)
+
+        output_dir = Path("/tmp/images_translated")
+        result = MagicMock()
+        result.output_dir = output_dir
+
+        window._on_batch_completed(result)
+
+        assert window._chat_session.last_directory == output_dir
+
+    def test_does_not_set_last_directory_without_output_dir(self, qtbot):
+        """result에 output_dir이 없으면 last_directory를 갱신하지 않아야 한다."""
+        window = make_main_window(qtbot)
+
+        result = object()  # output_dir 속성 없음
+
+        window._on_batch_completed(result)
+
+        assert window._chat_session.last_directory is None

@@ -14,7 +14,8 @@
       "WebFetch(domain:crewai.com)",
       "WebFetch(domain:github.com)",
       "Bash(python3:*)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(pip install:*)"
     ]
   },
   "hooks": {
@@ -24,8 +25,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "scripts/lint.sh",
-            "description": "파일 수정 후 자동 린트 실행"
+            "command": "scripts/lint.sh"
           }
         ]
       }
@@ -36,8 +36,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "echo '[Hook] Bash 명령 실행 전 확인 중...'",
-            "description": "Bash 실행 전 로그"
+            "command": "echo '[Hook] Bash 명령 실행 전 확인 중...'"
           }
         ]
       }
@@ -47,8 +46,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "if [ -f TODO.md ]; then echo '[세션 종료] TODO.md 업데이트를 잊지 마세요!'; fi",
-            "description": "세션 종료 시 TODO 업데이트 리마인더"
+            "command": "if [ -f TODO.md ]; then echo '[세션 종료] TODO.md 업데이트를 잊지 마세요!'; fi"
           }
         ]
       }

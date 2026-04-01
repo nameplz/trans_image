@@ -5,6 +5,39 @@
 
 ---
 
+## 2026-04-01: Wave 1 완료 — 버그 수정 + 폰트 번들 + 단위 테스트 204개
+
+### 수정 (버그)
+
+- `src/models/processing_job.py` — `ProcessingJob.status_label` `@property` 추가 (`status.value` 반환). `pipeline_worker.py:69`, `job_queue_panel.py:62` 참조 오류 해소
+- `src/models/text_region.py` — `TextStyle` Enum → dataclass 교체. `font_family`, `font_size`, `color`, `background_color`, `bold`, `italic` 필드 추가. `TextRegion.style` 기본값 `default_factory=TextStyle`로 변경
+- `src/services/rendering_service.py` — `bg_color is not None` 가드 추가. 배경색 없는 영역에 빈 사각형이 그려지던 문제 수정
+- `src/plugins/translators/gemini_translator.py`, `grok_translator.py`, `papago_translator.py` — `translate_batch`에서 frozen `TranslationResult`에 직접 대입(`res.region_id = ...`) → `dataclasses.replace()` 패턴으로 교체. `FrozenInstanceError` 방지
+
+### 추가
+
+- `scripts/download_fonts.py` — NotoSansCJKkr Regular/Bold OTF 자동 다운로드 스크립트 (`urllib.request` 전용, 진행률 표시, 이미 존재 시 스킵)
+- `scripts/download_fonts.sh` — `download_fonts.py` 래퍼 셸 스크립트
+- `assets/fonts/NotoSansCJKkr-Regular.otf` (16 MB), `assets/fonts/NotoSansCJKkr-Bold.otf` (17 MB) — 번들 폰트 파일
+- `tests/conftest.py` — 프로젝트 공유 fixture (`mock_config`, `sample_image`, `sample_text_region`, `sample_regions`, `sample_job`)
+- `tests/unit/test_session.py` — `Session` 클래스 11개 테스트
+- `tests/unit/test_image_utils.py` — `resize_keep_aspect`, `crop_region`, 변환 왕복 7개 테스트
+- `tests/unit/test_font_service.py` — 번들/폴백/캐시/`detect_text_color` 6개 테스트
+- `tests/unit/test_inpainting_service.py` — 빈 regions, 마스크 생성, NS/LaMa 폴백 5개 테스트
+- `tests/unit/test_rendering_service.py` — `_wrap_text`, `_fit_font_size`, bg_color 가드 7개 테스트
+- `tests/unit/test_plugin_manager.py` — 로드/캐시/env 해석/`unload_all` 10개 테스트
+- `tests/unit/test_pipeline.py` — `Pipeline.run()` 정상/취소/실패/에이전트 분기 12개 테스트
+- `tests/unit/test_translator_plugins.py` — DeepL/Gemini/Grok/Papago/Ollama validate+translate+batch 20개 테스트
+- `tests/unit/test_ocr_plugins.py` — EasyOCR/PaddleOCR mock 6개 테스트
+- `tests/unit/test_agent_plugins.py` — Claude/OpenAI/Ollama analyze+context+validate 11개 테스트
+
+### 테스트 결과
+
+- 신규 테스트 **204개 통과** (`pytest tests/unit/ --ignore=tests/unit/test_message_parser.py`)
+- 기존 `test_message_parser.py` 실패 3건 — Windows 경로 하드코딩 사전 존재 버그 (이번 범위 외)
+
+---
+
 ## 2026-03-30: 구현 계획 수립 및 TODO.md 재구성
 
 ### 변경

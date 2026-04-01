@@ -93,5 +93,9 @@ class ProcessingJob:
         self.completed_at = datetime.now()
 
     @property
+    def status_label(self) -> str:
+        return self.status.value
+
+    @property
     def is_done(self) -> bool:
         return self.status in _TERMINAL_STATUSES

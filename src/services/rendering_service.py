@@ -113,7 +113,8 @@ class RenderingService:
         bg_color = region.style.background_color
 
         # 배경 사각형 그리기 (선택적)
-        draw.rectangle([x1, y1, x2, y2], fill=bg_color)
+        if bg_color is not None:
+            draw.rectangle([x1, y1, x2, y2], fill=bg_color)
 
         # 텍스트 줄바꿈 후 렌더링
         lines = self._wrap_text(text, font, max_w, draw)

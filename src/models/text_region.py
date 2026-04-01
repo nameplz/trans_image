@@ -13,10 +13,16 @@ class TextDirection(Enum):
     VERTICAL = "vertical"
 
 
-class TextStyle(Enum):
-    NORMAL = "normal"
-    BOLD = "bold"
-    ITALIC = "italic"
+@dataclass
+class TextStyle:
+    """텍스트 렌더링 스타일."""
+
+    font_family: str = ""
+    font_size: float = 12.0
+    color: tuple[int, int, int] = (0, 0, 0)
+    background_color: tuple[int, int, int] | None = None
+    bold: bool = False
+    italic: bool = False
 
 
 @dataclass
@@ -82,7 +88,7 @@ class TextRegion:
     reading_order: int = 0
     needs_review: bool = False
     direction: TextDirection = field(default=TextDirection.LTR)
-    style: TextStyle = field(default=TextStyle.NORMAL)
+    style: TextStyle = field(default_factory=TextStyle)
 
     @property
     def is_low_confidence(self) -> bool:

@@ -15,7 +15,8 @@
       "WebFetch(domain:github.com)",
       "Bash(python3:*)",
       "Bash(python:*)",
-      "Bash(pip install:*)"
+      "Bash(pip install:*)",
+      "Bash(uv run:*)"
     ]
   },
   "hooks": {

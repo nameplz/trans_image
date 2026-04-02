@@ -175,6 +175,55 @@ class Pipeline:
             logger.exception("파이프라인 실패 (%s): %s", job.job_id[:8], e)
             raise PipelineError(error_msg) from e
 
+    async def reprocess_region(
+        self,
+        job: ProcessingJob,
+        region_id: str,
+        progress_cb: ProgressCallback | None = None,
+    ) -> ProcessingJob:
+        """단일 영역 OCR+번역 재처리 후 전체 이미지 재렌더링.
+
+        Args:
+            job: 처리 중인 작업 (original_image, regions 포함)
+            region_id: 재처리할 TextRegion의 ID
+            progress_cb: 진행 상태 콜백 (job, message) → None
+
+        Returns:
+            업데이트된 ProcessingJob (final_image 갱신됨)
+
+        Raises:
+            ValueError: region_id가 job.regions에 없을 때
+        """
+        def notify(msg: str) -> None:
+            if progress_cb:
+                progress_cb(job, msg)
+            logger.info("[%s] reprocess: %s", job.job_id[:8], msg)
+
+        target = next((r for r in job.regions if r.region_id == region_id), None)
+        if target is None:
+            raise ValueError(f"region_id '{region_id}' not found in job.regions")
+
+        notify(f"영역 재번역 중: {region_id[:8]}…")
+
+        # 번역만 재실행
+        translator = self._plugins.get_translator_plugin(job.translator_plugin_id)
+        if not translator.is_loaded:
+            await translator.load()
+
+        source_lang = target.source_lang_code or job.source_lang or "auto"
+        results = await translator.translate_batch([target], source_lang, job.target_lang)
+        if results and results[0].is_success:
+            target.translated_text = results[0].translated_text
+        notify("재번역 완료")
+
+        # 인페인팅은 기존 inpainted_image 재사용, 전체 regions로 재렌더링
+        image_base = job.inpainted_image if job.inpainted_image is not None else job.original_image
+        notify("이미지 재렌더링 중")
+        final = await self._rendering_service.render(image_base, job.regions, self._font_service)
+        job.final_image = final
+        notify("재처리 완료")
+        return job
+
     def _load_image(self, path: Path) -> np.ndarray:
         """이미지 파일 로드 → RGB numpy 배열."""
         import cv2

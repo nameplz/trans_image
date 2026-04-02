@@ -99,3 +99,8 @@ class ProcessingJob:
     @property
     def is_done(self) -> bool:
         return self.status in _TERMINAL_STATUSES
+
+    @property
+    def is_running(self) -> bool:
+        """처리가 진행 중인 상태인지 반환."""
+        return self.status not in _TERMINAL_STATUSES and self.status != JobStatus.QUEUED

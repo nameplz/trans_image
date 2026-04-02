@@ -4,7 +4,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import numpy as np
-from PySide6.QtCore import Qt, Slot
+from PySide6.QtCore import Qt, QTimer, Slot
 from PySide6.QtGui import QDragEnterEvent, QDropEvent, QKeySequence, QAction
 from PySide6.QtWidgets import (
     QFileDialog,
@@ -34,7 +34,7 @@ from src.gui.widgets.progress_panel import ProgressPanel
 from src.gui.widgets.region_editor import RegionEditorPanel
 from src.gui.widgets.region_overlay import RegionOverlayManager
 from src.gui.workers.batch_worker import BatchWorker
-from src.gui.workers.pipeline_worker import WorkerPool
+from src.gui.workers.pipeline_worker import RegionReprocessWorker, WorkerPool
 from src.models.processing_job import ProcessingJob
 from src.utils.logger import get_logger
 
@@ -82,6 +82,7 @@ class MainWindow(QMainWindow):
         self._tabs = QTabWidget()
         self._image_viewer = ImageViewer()
         self._overlay_manager = RegionOverlayManager(self._image_viewer.scene_ref)
+        self._overlay_manager.region_selected.connect(self._on_region_selected)
         self._tabs.addTab(self._image_viewer, "이미지")
 
         self._comparison_view = ComparisonView()
@@ -94,6 +95,7 @@ class MainWindow(QMainWindow):
 
         self._region_editor = RegionEditorPanel()
         self._region_editor.translation_changed.connect(self._on_translation_edited)
+        self._region_editor.reprocess_requested.connect(self._on_reprocess_requested)
         right_splitter.addWidget(self._region_editor)
 
         self._job_queue = JobQueuePanel()
@@ -284,20 +286,75 @@ class MainWindow(QMainWindow):
                 job.original_image,
                 job.final_image,
             )
+            self._tabs.setCurrentIndex(1)
         self._job_queue.update_job(job_id)
         self._status_bar.showMessage(f"완료: {job_id[:8]}")
+        QTimer.singleShot(3000, self._do_reset_progress_if_idle)
 
     @Slot(str, str)
     def _on_job_failed(self, job_id: str, error: str) -> None:
         self._job_queue.update_job(job_id)
         self._status_bar.showMessage(f"실패: {error}")
         QMessageBox.critical(self, "처리 실패", f"오류:\n{error}")
+        QTimer.singleShot(3000, self._do_reset_progress_if_idle)
+
+    def _do_reset_progress_if_idle(self) -> None:
+        """진행 중인 job이 없을 때만 ProgressPanel을 리셋한다."""
+        if self._current_job is not None and self._current_job.is_running:
+            return
+        self._progress_panel.reset()
 
     @Slot(str)
     def _on_job_selected(self, job_id: str) -> None:
         job = self._session.get_job(job_id)
         if job:
             self._current_job = job
+
+    @Slot(str)
+    def _on_region_selected(self, region_id: str) -> None:
+        """오버레이 아이템 클릭 시 RegionEditorPanel에 영역 로드."""
+        if self._current_job is None:
+            return
+        target = next(
+            (r for r in self._current_job.regions if r.region_id == region_id),
+            None,
+        )
+        if target is None:
+            return
+        self._overlay_manager.select(region_id)
+        self._region_editor.load_region(target)
+
+    @Slot(str)
+    def _on_reprocess_requested(self, region_id: str) -> None:
+        """단일 영역 재처리 요청 처리 — RegionReprocessWorker 시작."""
+        if self._current_job is None:
+            return
+        target = next(
+            (r for r in self._current_job.regions if r.region_id == region_id),
+            None,
+        )
+        if target is None:
+            return
+        worker = RegionReprocessWorker(
+            self._pipeline, self._current_job, region_id, parent=self
+        )
+        worker.progress_updated.connect(self._on_progress)
+        worker.region_done.connect(self._on_region_reprocess_done)
+        worker.region_failed.connect(self._on_region_reprocess_failed)
+        worker.start()
+
+    @Slot(str, str)
+    def _on_region_reprocess_done(self, job_id: str, region_id: str) -> None:
+        job = self._session.get_job(job_id)
+        if job and job.final_image is not None:
+            self._image_viewer.set_image(job.final_image)
+            self._comparison_view.set_images(job.original_image, job.final_image)
+        self._status_bar.showMessage(f"재처리 완료: {region_id[:8]}…")
+
+    @Slot(str, str, str)
+    def _on_region_reprocess_failed(self, job_id: str, region_id: str, error: str) -> None:
+        self._status_bar.showMessage(f"재처리 실패: {error}")
+        logger.error("영역 재처리 실패 [%s]: %s", region_id[:8], error)
 
     @Slot(str, str)
     def _on_translation_edited(self, region_id: str, new_text: str) -> None:

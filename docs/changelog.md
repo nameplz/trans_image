@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-04-02: [D] Phase 5 GUI 위젯 연동 완성 (TDD)
+
+- **Phase 0** `src/models/text_region.py`: `TextRegion.is_manually_edited: bool = False` 필드 추가 (`region_editor.py`에서 설정하던 속성이 dataclass에 미선언이었던 버그 수정)
+- **Phase 0** `src/models/processing_job.py`: `is_running` property 추가 (비종단·비대기 상태 판별)
+- **5-1** `src/gui/widgets/region_overlay.py`: `RegionOverlayItem.mousePressEvent` 오버라이드 — `event.accept()` + 좌클릭 콜백 전달 (ScrollHandDrag 패닝 차단). `set_selection_callback()` 메서드 추가. `RegionOverlayManager`를 `QObject` 상속으로 변경, `region_selected = Signal(str)` 추가
+- **5-1** `src/gui/main_window.py`: `_overlay_manager.region_selected` → `_on_region_selected()` 연결. `_on_region_selected()` 슬롯 추가 (overlay.select + editor.load_region)
+- **5-2** `src/gui/workers/pipeline_worker.py`: `RegionReprocessWorker(QThread)` 클래스 추가 — 단일 영역 재번역+재렌더링을 비동기 실행
+- **5-2** `src/core/pipeline.py`: `reprocess_region()` async 메서드 추가 — 해당 region만 번역 재실행 후 전체 regions로 재렌더링
+- **5-2** `src/gui/main_window.py`: `_on_reprocess_requested()`, `_on_region_reprocess_done()`, `_on_region_reprocess_failed()` 슬롯 추가. `region_editor.reprocess_requested` 연결
+- **5-3** `src/gui/main_window.py`: `_on_job_done()`에 `self._tabs.setCurrentIndex(1)` 추가
+- **5-4** `src/gui/main_window.py`: `_on_job_done()`, `_on_job_failed()`에 `QTimer.singleShot(3000, self._do_reset_progress_if_idle)` 추가. `_do_reset_progress_if_idle()` 메서드 추가 (진행 중 job 가드)
+- 신규 테스트 41개: `tests/unit/test_main_window_phase5.py`, `tests/unit/test_region_overlay_phase5.py`, `tests/unit/test_pipeline_reprocess.py`
+- 전체: 303개 통과 (기존 3개 실패는 Windows 경로 이슈, 무관)
+
 ## 2026-03-26: [M-1][M-2][M-3][Bug] 대기 중 이슈 병렬 처리
 
 - **[M-1]** `src/chat/conversation.py`: `ChatMessage.metadata`를 `MappingProxyType`으로 래핑하여 불변성 강화

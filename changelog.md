@@ -5,6 +5,33 @@
 
 ---
 
+## 2026-04-02: Wave 2 완료 — GUI 위젯 연동 (Phase 5) + 단위 테스트 303개
+
+### 수정 (버그)
+
+- `src/models/text_region.py` — `is_manually_edited: bool = False` 필드 추가. `region_editor.py`에서 이미 이 속성에 쓰기를 하고 있었으나 dataclass 선언 누락으로 `AttributeError` 위험 존재
+- `src/models/processing_job.py` — `is_running` property 추가. QTimer 리셋 콜백에서 진행 중인 job 여부 확인에 사용
+
+### 추가 (Phase 5 구현)
+
+- `src/gui/widgets/region_overlay.py` — `RegionOverlayItem.mousePressEvent()` 오버라이드 (ScrollHandDrag 모드와의 충돌 해소). `RegionOverlayManager`를 `QObject` 상속으로 변경하고 `region_selected = Signal(str)` 추가 (오버레이 클릭 이벤트 전파)
+- `src/core/pipeline.py` — `reprocess_region()` async 메서드 추가. 단일 TextRegion의 번역만 재실행 후 기존 `inpainted_image`를 재사용하여 전체 regions 재렌더링하는 안전한 방식
+- `src/gui/workers/pipeline_worker.py` — `RegionReprocessWorker(QThread)` 클래스 추가. 단일 영역 재처리 전용 워커. `region_reprocessed`, `region_reprocess_failed` 시그널 포함
+- `src/gui/main_window.py` — Phase 5 연동 완성:
+  - `_on_region_selected()` — 오버레이 클릭 → `RegionEditorPanel.load_region()` 연동 (5-1)
+  - `_on_reprocess_requested()` / `_on_region_reprocess_done()` / `_on_region_reprocess_failed()` — 단일 영역 재처리 워커 생성·완료·실패 처리 (5-2)
+  - `_on_job_done()`에 `self._tabs.setCurrentIndex(1)` 추가 — 작업 완료 시 비교 탭 자동 전환 (5-3)
+  - `_do_reset_progress_if_idle()` — 완료/실패 후 QTimer 3초 → `progress_panel.reset()`. `is_running` 가드로 진행 중 다른 job이 있을 때 리셋 방지 (5-4)
+
+### 테스트
+
+- `tests/unit/test_main_window_phase5.py` — MainWindow Phase 5 슬롯/시그널 26개 테스트 (신규)
+- `tests/unit/test_region_overlay_phase5.py` — `RegionOverlayItem` 콜백·`RegionOverlayManager` Signal 15개 테스트 (신규)
+- `tests/unit/test_pipeline_reprocess.py` — `reprocess_region()` async 7개 테스트 (신규)
+- 신규 테스트 **41개 추가**, 총 **303개 통과** (기존 3건 Windows 경로 하드코딩 실패는 이번 범위 외)
+
+---
+
 ## 2026-04-01: Wave 1 완료 — 버그 수정 + 폰트 번들 + 단위 테스트 204개
 
 ### 수정 (버그)

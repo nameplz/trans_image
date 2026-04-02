@@ -87,6 +87,7 @@ class TextRegion:
     context_hint: str = ""
     reading_order: int = 0
     needs_review: bool = False
+    is_manually_edited: bool = False
     direction: TextDirection = field(default=TextDirection.LTR)
     style: TextStyle = field(default_factory=TextStyle)
 

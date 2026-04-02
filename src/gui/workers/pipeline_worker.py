@@ -78,6 +78,55 @@ class PipelineWorker(QThread):
         logger.info("취소 요청: %s", self._job.job_id)
 
 
+class RegionReprocessWorker(QThread):
+    """단일 영역 재처리를 QThread 내에서 실행.
+
+    Pipeline.reprocess_region()을 비동기로 실행하고 결과를 Signal로 전달한다.
+    """
+
+    progress_updated = Signal(str, float, str)   # job_id, progress, message
+    region_done = Signal(str, str)               # job_id, region_id
+    region_failed = Signal(str, str, str)        # job_id, region_id, error_message
+
+    def __init__(
+        self,
+        pipeline: Pipeline,
+        job,
+        region_id: str,
+        parent=None,
+    ) -> None:
+        super().__init__(parent)
+        self._pipeline = pipeline
+        self._job = job
+        self._region_id = region_id
+
+    def run(self) -> None:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            loop.run_until_complete(self._run())
+        except Exception as e:
+            logger.exception("RegionReprocessWorker 오류: %s", e)
+        finally:
+            loop.close()
+
+    async def _run(self) -> None:
+        try:
+            await self._pipeline.reprocess_region(
+                self._job,
+                self._region_id,
+                progress_cb=self._on_progress,
+            )
+            self.region_done.emit(self._job.job_id, self._region_id)
+        except Exception as e:
+            error = traceback.format_exc()
+            logger.error("단일 영역 재처리 실패: %s", error)
+            self.region_failed.emit(self._job.job_id, self._region_id, str(e))
+
+    def _on_progress(self, job, message: str) -> None:
+        self.progress_updated.emit(job.job_id, job.progress, message)
+
+
 class WorkerPool:
     """여러 PipelineWorker를 관리하는 풀."""
 

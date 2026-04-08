@@ -67,3 +67,6 @@ temp/
 # 번들 폰트 (용량 큰 경우 LFS 사용 권장)
 # assets/fonts/*.ttf
 # assets/fonts/*.otf
+
+# 샘플
+sample/

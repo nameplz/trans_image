@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-04-08: [F] Phase C GUI 위젯 테스트 완성
+
+- `tests/unit/test_image_viewer.py` 신규 — 12개 (set_image, zoom in/out/reset/clamp, fit_in_view, wheelEvent, signal emit)
+- `tests/unit/test_region_editor.py` 신규 — 11개 (load_region, enable/disable, apply signal, translation_changed, clear, reprocess_requested)
+- `tests/unit/test_settings_panel.py` 신규 — 7개 (초기값 로드, get_current_settings, apply → config.set, settings_changed signal, plugin 콤보박스)
+- 신규 테스트 30개 전부 통과 (3개 에이전트 병렬 작성)
+
 ## 2026-04-02: [D] Phase 5 GUI 위젯 연동 완성 (TDD)
 
 - **Phase 0** `src/models/text_region.py`: `TextRegion.is_manually_edited: bool = False` 필드 추가 (`region_editor.py`에서 설정하던 속성이 dataclass에 미선언이었던 버그 수정)

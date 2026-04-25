@@ -5,6 +5,32 @@
 
 ---
 
+## 2026-04-25: Wave 4 완료 — 통합 테스트 보강 + 커버리지 81%
+
+### 추가
+
+- `tests/integration/test_pipeline_e2e.py` — 더미 이미지와 OCR/번역/에이전트 플러그인 mock을 사용한 파이프라인 통합 테스트 3개 추가
+  - 정상 완료 + 출력 파일 저장
+  - 에이전트 분석/컨텍스트/검증 경로 포함
+  - 일부 번역 실패 시 `needs_review`/카운트 집계 검증
+- 커버리지 보강 단위 테스트 추가
+  - `tests/unit/test_pipeline_worker.py` — `PipelineWorker`, `RegionReprocessWorker`, `RegionPreviewWorker`, `WorkerPool`
+  - `tests/unit/test_app_entrypoints.py` — `create_app()`, `run_gui()`, CLI `parse_args()` / `run_cli()`
+  - `tests/unit/test_job_queue_panel.py` — 작업 추가/업데이트/선택/완료 항목 정리
+  - `tests/unit/test_settings_dialog.py` — OK 적용 및 설정 조회 위임
+  - `tests/unit/test_theme.py` — 테마 이름 정규화, QSS 로드/폴백, 적용
+  - `tests/unit/test_logger_utils.py` — 로거 캐시, 핸들러 구성, `LogContext`
+
+### 변경
+
+- `TODO.md` — `[I] 항목 2 Phase D: 통합 테스트 보강` 완료 처리
+- `graphify-out/` — `graphify update .` 실행으로 코드 그래프 갱신
+
+### 테스트 결과
+
+- `uv run pytest tests/integration/test_pipeline_e2e.py tests/unit/test_pipeline_worker.py tests/unit/test_app_entrypoints.py tests/unit/test_job_queue_panel.py tests/unit/test_settings_dialog.py tests/unit/test_theme.py tests/unit/test_logger_utils.py` → **33 passed**
+- `uv run pytest --cov=src --cov-report=term-missing` → **385 passed**, 총 커버리지 **81%**
+
 ## 2026-04-02: Wave 2 완료 — GUI 위젯 연동 (Phase 5) + 단위 테스트 303개
 
 ### 수정 (버그)

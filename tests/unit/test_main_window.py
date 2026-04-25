@@ -1,6 +1,7 @@
 """MainWindow 단위 테스트 — H-4 이전 BatchWorker 미정리."""
 from __future__ import annotations
 
+import numpy as np
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -11,7 +12,11 @@ from src.gui.main_window import MainWindow
 def make_main_window(qtbot):
     """테스트용 MainWindow 생성 — 모든 의존성 Mock 처리."""
     config = MagicMock()
-    config.get.return_value = "anthropic"
+    config.get.side_effect = lambda *keys, default=None: {
+        ("chat", "llm_provider"): "anthropic",
+        ("chat", "llm_model"): "claude-haiku-4-5-20251001",
+        ("app", "theme"): "dark",
+    }.get(keys, default)
     config.get_api_key.return_value = ""
 
     plugin_manager = MagicMock()
@@ -121,3 +126,72 @@ class TestOnBatchCompleted:
         window._on_batch_completed(result)
 
         assert window._chat_session.last_directory is None
+
+
+class TestStreamingAndTheme:
+    def test_agent_stream_relays_to_chat_panel(self, qtbot):
+        window = make_main_window(qtbot)
+        window._chat_panel.start_stream = MagicMock()
+        window._chat_panel.append_stream_chunk = MagicMock()
+        window._chat_panel.finish_stream = MagicMock()
+
+        window._on_agent_stream_chunk("abc")
+        window._on_agent_stream_chunk("def")
+        window._on_agent_stream_finished()
+
+        window._chat_panel.start_stream.assert_called_once_with("assistant")
+        assert window._chat_panel.append_stream_chunk.call_count == 2
+        window._chat_panel.finish_stream.assert_called_once()
+
+    def test_set_theme_persists_config(self, qtbot):
+        window = make_main_window(qtbot)
+
+        with patch("src.gui.main_window.apply_theme", return_value="light") as mock_apply:
+            window._set_theme("light")
+
+        mock_apply.assert_called_once()
+        window._config.set.assert_called_once_with("app", "theme", value="light")
+        window._config.save.assert_called_once()
+
+
+class TestPreviewApply:
+    def test_preview_ready_updates_view_only(self, qtbot):
+        window = make_main_window(qtbot)
+        job = MagicMock()
+        job.job_id = "job-1"
+        job.final_image = None
+        window._current_job = job
+        preview = np.ones((10, 10, 3), dtype=np.uint8)
+        window._pending_preview_text = "draft"
+        window._preview_request_id = 3
+        window._image_viewer.set_image = MagicMock()
+        window._comparison_view.set_translated = MagicMock()
+
+        window._on_preview_ready("job-1", "region-1", 3, preview)
+
+        assert job.final_image is None
+        window._image_viewer.set_image.assert_called_once_with(preview)
+        window._comparison_view.set_translated.assert_called_once_with(preview)
+
+    def test_translation_apply_promotes_latest_preview(self, qtbot):
+        window = make_main_window(qtbot)
+        region = MagicMock()
+        region.region_id = "region-1"
+        region.translated_text = ""
+        job = MagicMock()
+        job.regions = [region]
+        preview = np.ones((10, 10, 3), dtype=np.uint8)
+        job.final_image = None
+        window._current_job = job
+        window._latest_preview_image = preview
+        window._latest_preview_region_id = "region-1"
+        window._latest_preview_text = "draft"
+        window._latest_preview_request_id = 7
+        window._preview_request_id = 7
+        window._image_viewer.set_image = MagicMock()
+        window._comparison_view.set_translated = MagicMock()
+
+        window._on_translation_edited("region-1", "draft")
+
+        assert region.translated_text == "draft"
+        assert job.final_image is preview

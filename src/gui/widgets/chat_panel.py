@@ -1,11 +1,8 @@
 """채팅 패널 위젯 — @경로 멘션으로 배치 번역을 지시하는 대화형 UI."""
 from __future__ import annotations
 
-from pathlib import Path
-from typing import Any
-
-from PySide6.QtCore import Qt, Signal, QStringListModel
-from PySide6.QtGui import QColor, QFont, QKeyEvent
+from PySide6.QtCore import QTimer, Qt, Signal
+from PySide6.QtGui import QKeyEvent
 from PySide6.QtWidgets import (
     QCompleter,
     QFileSystemModel,
@@ -32,35 +29,41 @@ class _MessageBubble(QFrame):
     def __init__(self, role: str, content: str, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self._role = role
+        self.setProperty("messageRole", role)
         self._setup_ui(content)
 
     def _setup_ui(self, content: str) -> None:
         layout = QHBoxLayout(self)
         layout.setContentsMargins(8, 4, 8, 4)
 
-        label = QLabel(content)
-        label.setWordWrap(True)
-        label.setTextInteractionFlags(Qt.TextSelectableByMouse)
-        label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self._label = QLabel(content)
+        self._label.setObjectName("messageLabel")
+        self._label.setProperty("messageRole", self._role)
+        self._label.setWordWrap(True)
+        self._label.setTextInteractionFlags(Qt.TextSelectableByMouse)
+        self._label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
 
         if self._role == "user":
-            label.setAlignment(Qt.AlignRight)
-            label.setStyleSheet(
-                "background:#2b5278; color:white; border-radius:8px; padding:6px;"
-            )
+            self._label.setAlignment(Qt.AlignRight)
             layout.addStretch()
-            layout.addWidget(label)
+            layout.addWidget(self._label)
         elif self._role == "system":
-            label.setAlignment(Qt.AlignCenter)
-            label.setStyleSheet("color:#888; font-style:italic; padding:2px;")
-            layout.addWidget(label)
+            self._label.setAlignment(Qt.AlignCenter)
+            layout.addWidget(self._label)
         else:  # assistant
-            label.setAlignment(Qt.AlignLeft)
-            label.setStyleSheet(
-                "background:#3c3c3c; color:#ddd; border-radius:8px; padding:6px;"
-            )
-            layout.addWidget(label)
+            self._label.setAlignment(Qt.AlignLeft)
+            layout.addWidget(self._label)
             layout.addStretch()
+
+    @property
+    def content(self) -> str:
+        return self._label.text()
+
+    def append_content(self, chunk: str) -> None:
+        self._label.setText(self._label.text() + chunk)
+
+    def set_content(self, content: str) -> None:
+        self._label.setText(content)
 
 
 class _ChatInput(QLineEdit):
@@ -115,8 +118,14 @@ class ChatPanel(QWidget):
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
+        self.setObjectName("chatPanel")
         self._setup_ui()
         self._progress_bar: QProgressBar | None = None
+        self._stream_bubble: _MessageBubble | None = None
+        self._stream_pending = ""
+        self._stream_timer = QTimer(self)
+        self._stream_timer.setInterval(20)
+        self._stream_timer.timeout.connect(self._drain_stream_chunk)
 
     def _setup_ui(self) -> None:
         layout = QVBoxLayout(self)
@@ -177,6 +186,35 @@ class ChatPanel(QWidget):
             self._progress_bar.setMaximum(total)
             self._progress_bar.setValue(current)
 
+    def start_stream(self, role: str) -> None:
+        """스트리밍 메시지를 시작한다. 기존 미완료 스트림은 즉시 마무리한다."""
+        if self._stream_bubble is not None:
+            self.finish_stream()
+        self._stream_pending = ""
+        self._stream_bubble = _MessageBubble(role, "")
+        count = self._msg_layout.count()
+        self._msg_layout.insertWidget(count - 1, self._stream_bubble)
+        self._scroll_to_bottom()
+
+    def append_stream_chunk(self, chunk: str) -> None:
+        """현재 스트리밍 메시지에 chunk를 추가한다."""
+        if self._stream_bubble is None:
+            self.start_stream("assistant")
+        self._stream_pending += chunk
+        if not self._stream_timer.isActive():
+            self._stream_timer.start()
+
+    def finish_stream(self) -> None:
+        """현재 스트리밍 메시지를 즉시 완료한다."""
+        if self._stream_bubble is None:
+            return
+        if self._stream_pending:
+            self._stream_bubble.append_content(self._stream_pending)
+            self._stream_pending = ""
+        self._stream_timer.stop()
+        self._stream_bubble = None
+        self._scroll_to_bottom()
+
     # ── 내부 메서드 ─────────────────────────────────────────────────────────
 
     def _on_submit(self, text: str) -> None:
@@ -197,6 +235,20 @@ class ChatPanel(QWidget):
         self._msg_layout.removeWidget(self._progress_bar)
         self._progress_bar.deleteLater()
         self._progress_bar = None
+
+    def _drain_stream_chunk(self) -> None:
+        if self._stream_bubble is None:
+            self._stream_timer.stop()
+            self._stream_pending = ""
+            return
+        if not self._stream_pending:
+            self._stream_timer.stop()
+            return
+        step = min(3, len(self._stream_pending))
+        next_chunk = self._stream_pending[:step]
+        self._stream_pending = self._stream_pending[step:]
+        self._stream_bubble.append_content(next_chunk)
+        self._scroll_to_bottom()
 
     def _scroll_to_bottom(self) -> None:
         bar = self._scroll.verticalScrollBar()

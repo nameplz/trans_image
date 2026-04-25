@@ -5,7 +5,7 @@ import pytest
 from PySide6.QtCore import Qt
 from PySide6.QtTest import QTest
 
-from src.gui.widgets.chat_panel import ChatPanel, _ChatInput
+from src.gui.widgets.chat_panel import ChatPanel, _ChatInput, _MessageBubble
 
 
 class TestChatPanelSignals:
@@ -61,6 +61,35 @@ class TestChatPanelSignals:
         panel.set_batch_running(False)
         assert panel._input.isEnabled()
         assert not panel._stop_btn.isEnabled()
+
+    def test_stream_lifecycle_reuses_single_bubble(self, qtbot):
+        panel = ChatPanel()
+        qtbot.addWidget(panel)
+
+        panel.start_stream("assistant")
+        panel.append_stream_chunk("안녕")
+        panel.append_stream_chunk("하세요")
+        panel.finish_stream()
+
+        assert panel._stream_bubble is None
+        messages = panel._msg_container.findChildren(_MessageBubble)
+        assert len(messages) == 1
+        assert messages[0].content == "안녕하세요"
+
+    def test_start_stream_finishes_previous_stream(self, qtbot):
+        panel = ChatPanel()
+        qtbot.addWidget(panel)
+
+        panel.start_stream("assistant")
+        panel.append_stream_chunk("첫번째")
+        panel.start_stream("assistant")
+        panel.append_stream_chunk("두번째")
+        panel.finish_stream()
+
+        bubbles = [panel._msg_layout.itemAt(i).widget() for i in range(panel._msg_layout.count() - 1)]
+        assert len(bubbles) == 2
+        assert bubbles[0].content == "첫번째"
+        assert bubbles[1].content == "두번째"
 
 
 class TestChatInputCompleter:

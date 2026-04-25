@@ -43,6 +43,7 @@ _AGENT_TRIGGER_KW = re.compile(r'에이전트\s*없이|에이전트\s*끄|no.?ag
 _AGENT_PROVIDER_RE = re.compile(
     r'(claude|openai|gpt|ollama|grok)\s+에이전트', re.IGNORECASE
 )
+_WINDOWS_ABS_RE = re.compile(r"^[A-Za-z]:[\\/]")
 
 
 def _normalize_path(token: str, cwd: Path) -> Path:
@@ -60,7 +61,7 @@ def _normalize_path(token: str, cwd: Path) -> Path:
         ValueError: 경로 순회 공격이 감지된 경우
     """
     p = Path(token)
-    if p.is_absolute():
+    if p.is_absolute() or _WINDOWS_ABS_RE.match(token):
         return p
 
     combined = cwd / p

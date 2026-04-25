@@ -283,3 +283,24 @@ class TestPipelineEdgeCases:
         await pipeline.run(job)
         assert job.failed_regions == 1
         assert job.translated_regions == 1
+
+
+class TestPipelinePreview:
+    async def test_preview_region_translation_does_not_mutate_job(self, mock_pipeline, tmp_path):
+        pipeline, _, _ = mock_pipeline
+        img_path = make_dummy_image(tmp_path)
+        regions = make_regions(2)
+        job = ProcessingJob(input_path=img_path, target_lang="ko", use_agent=False)
+        job.original_image = np.zeros((100, 200, 3), dtype=np.uint8)
+        job.regions = regions
+
+        preview = np.ones((100, 200, 3), dtype=np.uint8)
+        pipeline._rendering_service.render = AsyncMock(return_value=preview)
+
+        result = await pipeline.preview_region_translation(job, regions[0].region_id, "draft")
+
+        assert result is preview
+        assert job.regions[0].translated_text == ""
+        render_regions = pipeline._rendering_service.render.await_args.args[1]
+        assert render_regions[0].translated_text == "draft"
+        assert render_regions[1].translated_text == ""

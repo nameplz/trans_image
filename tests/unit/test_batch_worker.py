@@ -107,3 +107,40 @@ class TestRunBatchErrorPaths:
             await worker._run_batch()
 
         assert completed == []
+
+    async def test_stream_signals_emitted_for_batch_messages(self, qtbot, session, pipeline, tmp_path):
+        """정상 배치 흐름에서 스트리밍 chunk와 finished 시그널이 emit된다."""
+        img = tmp_path / "test.png"
+        img.touch()
+        parsed = _make_parsed(directory_path=tmp_path, target_lang="ko")
+        worker = BatchWorker(parsed=parsed, session=session, pipeline=pipeline, chat_config={})
+
+        chunks: list[str] = []
+        finished: list[int] = []
+        worker.agent_stream_chunk.connect(chunks.append)
+        worker.agent_stream_finished.connect(lambda: finished.append(1))
+
+        result = MagicMock()
+        result.total = 1
+        result.completed = 1
+        result.failed = 0
+        result.output_dir = tmp_path / "out"
+
+        async def fake_run_batch(jobs, pipeline, on_progress):
+            on_progress("test.png", 1, 1)
+            return result
+
+        with patch("src.gui.workers.batch_worker.ChatAgent") as MockAgent, \
+             patch("src.gui.workers.batch_worker.BatchProcessor") as MockProcessor:
+            agent = MockAgent.return_value
+            agent.resolve_params.return_value = (parsed, None)
+            agent.format_start.return_value = "시작 메시지"
+            agent.format_progress.return_value = "진행 메시지"
+            agent.format_result.return_value = "완료 메시지"
+            MockProcessor.return_value.scan_directory.return_value = [img]
+            MockProcessor.return_value.create_batch_jobs.return_value = [MagicMock()]
+            MockProcessor.return_value.run_batch = fake_run_batch
+            await worker._run_batch()
+
+        assert "".join(chunks) == "시작 메시지진행 메시지완료 메시지"
+        assert len(finished) == 3

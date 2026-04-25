@@ -127,6 +127,57 @@ class RegionReprocessWorker(QThread):
         self.progress_updated.emit(job.job_id, job.progress, message)
 
 
+class RegionPreviewWorker(QThread):
+    """영역 번역 draft 프리뷰를 QThread에서 렌더링한다."""
+
+    preview_ready = Signal(str, str, int, object)   # job_id, region_id, request_id, image
+    preview_failed = Signal(str, str, int, str)     # job_id, region_id, request_id, error
+
+    def __init__(
+        self,
+        pipeline: Pipeline,
+        job: ProcessingJob,
+        region_id: str,
+        draft_text: str,
+        request_id: int,
+        parent=None,
+    ) -> None:
+        super().__init__(parent)
+        self._pipeline = pipeline
+        self._job = job
+        self._region_id = region_id
+        self._draft_text = draft_text
+        self._request_id = request_id
+
+    def run(self) -> None:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            preview = loop.run_until_complete(
+                self._pipeline.preview_region_translation(
+                    self._job,
+                    self._region_id,
+                    self._draft_text,
+                )
+            )
+            self.preview_ready.emit(
+                self._job.job_id,
+                self._region_id,
+                self._request_id,
+                preview,
+            )
+        except Exception as e:
+            logger.error("영역 프리뷰 실패 [%s]: %s", self._region_id[:8], e)
+            self.preview_failed.emit(
+                self._job.job_id,
+                self._region_id,
+                self._request_id,
+                str(e),
+            )
+        finally:
+            loop.close()
+
+
 class WorkerPool:
     """여러 PipelineWorker를 관리하는 풀."""
 

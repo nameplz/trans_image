@@ -20,11 +20,13 @@ class RegionEditorPanel(QWidget):
 
     text_changed = Signal(str, str)        # region_id, new_raw_text
     translation_changed = Signal(str, str) # region_id, new_translated_text
+    translation_preview_requested = Signal(str, str)  # region_id, draft_text
     reprocess_requested = Signal(str)      # region_id
 
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
         self._current_region: TextRegion | None = None
+        self._loading_region = False
         self._setup_ui()
 
     def _setup_ui(self) -> None:
@@ -33,7 +35,7 @@ class RegionEditorPanel(QWidget):
 
         # 헤더
         self._header = QLabel("영역을 선택하세요")
-        self._header.setStyleSheet("font-weight: bold; font-size: 13px;")
+        self._header.setObjectName("regionEditorHeader")
         layout.addWidget(self._header)
 
         sep = QFrame()
@@ -52,11 +54,12 @@ class RegionEditorPanel(QWidget):
         self._trans_edit = QPlainTextEdit()
         self._trans_edit.setMaximumHeight(80)
         self._trans_edit.setPlaceholderText("번역 텍스트")
+        self._trans_edit.textChanged.connect(self._on_translation_text_edited)
         layout.addWidget(self._trans_edit)
 
         # 신뢰도 표시
         self._conf_label = QLabel("신뢰도: —")
-        self._conf_label.setStyleSheet("color: gray; font-size: 11px;")
+        self._conf_label.setProperty("mutedText", True)
         layout.addWidget(self._conf_label)
 
         # 버튼
@@ -74,20 +77,24 @@ class RegionEditorPanel(QWidget):
 
     def load_region(self, region: TextRegion) -> None:
         self._current_region = region
+        self._loading_region = True
         self._header.setText(f"영역 ID: {region.region_id[:8]}…")
         self._raw_edit.setPlainText(region.raw_text)
         self._trans_edit.setPlainText(region.translated_text)
         conf_pct = int(region.confidence * 100)
         self._conf_label.setText(f"신뢰도: {conf_pct}%")
         self._set_enabled(True)
+        self._loading_region = False
 
     def clear(self) -> None:
         self._current_region = None
+        self._loading_region = True
         self._header.setText("영역을 선택하세요")
         self._raw_edit.clear()
         self._trans_edit.clear()
         self._conf_label.setText("신뢰도: —")
         self._set_enabled(False)
+        self._loading_region = False
 
     def _set_enabled(self, enabled: bool) -> None:
         self._raw_edit.setEnabled(enabled)
@@ -113,3 +120,11 @@ class RegionEditorPanel(QWidget):
     def _on_reprocess(self) -> None:
         if self._current_region:
             self.reprocess_requested.emit(self._current_region.region_id)
+
+    def _on_translation_text_edited(self) -> None:
+        if self._loading_region or self._current_region is None:
+            return
+        self.translation_preview_requested.emit(
+            self._current_region.region_id,
+            self._trans_edit.toPlainText(),
+        )

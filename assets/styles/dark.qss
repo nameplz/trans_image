@@ -1,4 +1,4 @@
-/* trans_image 다크 테마 스타일시트 */
+/* trans_image 다크 테마 */
 
 QMainWindow, QWidget {
     background-color: #2b2b2b;
@@ -68,7 +68,7 @@ QGroupBox::title {
     padding: 0 4px;
 }
 
-QLineEdit, QPlainTextEdit, QComboBox {
+QLineEdit, QPlainTextEdit, QComboBox, QSpinBox {
     background-color: #3c3f41;
     color: #d4d4d4;
     border: 1px solid #666;
@@ -77,7 +77,7 @@ QLineEdit, QPlainTextEdit, QComboBox {
     selection-background-color: #4c82c9;
 }
 
-QLineEdit:focus, QPlainTextEdit:focus {
+QLineEdit:focus, QPlainTextEdit:focus, QSpinBox:focus {
     border-color: #4c82c9;
 }
 
@@ -151,6 +151,36 @@ QStatusBar {
     border-top: 1px solid #555;
 }
 
-QLabel {
-    color: #d4d4d4;
+QLabel[mutedText="true"] {
+    color: #9a9a9a;
+}
+
+QLabel#regionEditorHeader {
+    font-weight: bold;
+    font-size: 13px;
+}
+
+QGraphicsView#imageViewer {
+    background-color: #1f1f1f;
+    border: 1px solid #444;
+}
+
+QFrame[messageRole="user"] QLabel#messageLabel {
+    background-color: #2b5278;
+    color: #ffffff;
+    border-radius: 8px;
+    padding: 6px;
+}
+
+QFrame[messageRole="assistant"] QLabel#messageLabel {
+    background-color: #3c3c3c;
+    color: #dddddd;
+    border-radius: 8px;
+    padding: 6px;
+}
+
+QFrame[messageRole="system"] QLabel#messageLabel {
+    color: #9a9a9a;
+    font-style: italic;
+    padding: 2px;
 }

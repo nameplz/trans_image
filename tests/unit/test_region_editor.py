@@ -152,6 +152,19 @@ class TestRegionEditorPanel:
         assert emitted[0][0] == region.region_id
         assert emitted[0][1] == "수정된 번역"
 
+    def test_translation_preview_requested_on_typing(self, panel, region):
+        """번역 입력 중 textChanged가 preview 시그널을 emit한다."""
+        panel.load_region(region)
+
+        emitted: list[tuple[str, str]] = []
+        panel.translation_preview_requested.connect(
+            lambda rid, text: emitted.append((rid, text))
+        )
+
+        panel._trans_edit.setPlainText("실시간 프리뷰")
+
+        assert emitted[-1] == (region.region_id, "실시간 프리뷰")
+
     # ------------------------------------------------------------------
     # 6. reprocess 버튼 → reprocess_requested 시그널
     # ------------------------------------------------------------------

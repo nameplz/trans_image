@@ -50,6 +50,8 @@ logging:
 export:
   default_format: "png"  # png | jpg | webp
   jpg_quality: 95
+  webp_quality: 90
+  png_compression: 3
   output_dir: ""  # 비어 있으면 원본 파일과 같은 디렉토리
 
 chat:

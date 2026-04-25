@@ -4,6 +4,7 @@ from __future__ import annotations
 import asyncio
 import time
 from collections.abc import Callable
+from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
@@ -13,7 +14,9 @@ from src.core.config_manager import ConfigManager
 from src.core.exceptions import PipelineError, ImageProcessingError
 from src.core.plugin_manager import PluginManager
 from src.models.processing_job import ProcessingJob, JobStatus
+from src.models.export_options import ExportOptions, ImageFormat
 from src.models.text_region import TextRegion
+from src.services.export_service import ExportService
 from src.services.font_service import FontService
 from src.services.inpainting_service import InpaintingService
 from src.services.language_service import LanguageService
@@ -46,6 +49,7 @@ class Pipeline:
         self._inpainting_service = InpaintingService(config)
         self._rendering_service = RenderingService(config)
         self._font_service = FontService(config)
+        self._export_service = ExportService()
 
     async def run(
         self,
@@ -224,6 +228,33 @@ class Pipeline:
         notify("재처리 완료")
         return job
 
+    async def preview_region_translation(
+        self,
+        job: ProcessingJob,
+        region_id: str,
+        draft_text: str,
+    ) -> np.ndarray:
+        """영역 번역 draft를 비파괴적으로 반영한 프리뷰 이미지를 생성한다."""
+        target = next((r for r in job.regions if r.region_id == region_id), None)
+        if target is None:
+            raise ValueError(f"region_id '{region_id}' not found in job.regions")
+
+        image_base = job.inpainted_image if job.inpainted_image is not None else job.original_image
+        if image_base is None:
+            raise ValueError("preview requires original_image or inpainted_image")
+
+        preview_regions = [
+            replace(region, translated_text=draft_text)
+            if region.region_id == region_id
+            else replace(region)
+            for region in job.regions
+        ]
+        return await self._rendering_service.render(
+            image_base.copy(),
+            preview_regions,
+            self._font_service,
+        )
+
     def _load_image(self, path: Path) -> np.ndarray:
         """이미지 파일 로드 → RGB numpy 배열."""
         import cv2
@@ -232,16 +263,25 @@ class Pipeline:
             raise ImageProcessingError(f"이미지 로드 실패: {path}")
         return cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-    def _save_image(self, image: np.ndarray, path: Path) -> None:
+    def _save_image(
+        self,
+        image: np.ndarray,
+        path: Path,
+        options: ExportOptions | None = None,
+    ) -> None:
         """RGB numpy 배열 → 파일 저장."""
-        import cv2
-        path.parent.mkdir(parents=True, exist_ok=True)
-        bgr = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-        ext = path.suffix.lower()
-        params: list[int] = []
-        if ext in (".jpg", ".jpeg"):
-            quality = 95
-            params = [cv2.IMWRITE_JPEG_QUALITY, quality]
-        ok = cv2.imwrite(str(path), bgr, params)
-        if not ok:
-            raise ImageProcessingError(f"이미지 저장 실패: {path}")
+        export_options = options
+        if export_options is None:
+            ext = path.suffix.lower()
+            image_format = ImageFormat.PNG
+            if ext in (".jpg", ".jpeg"):
+                image_format = ImageFormat.JPEG
+            elif ext == ".webp":
+                image_format = ImageFormat.WEBP
+            export_options = ExportOptions(
+                format=image_format,
+                jpeg_quality=int(self._config.get("export", "jpg_quality", default=95) or 95),
+                webp_quality=int(self._config.get("export", "webp_quality", default=90) or 90),
+                png_compression=int(self._config.get("export", "png_compression", default=3) or 3),
+            )
+        self._export_service.save_image(image, path, export_options)

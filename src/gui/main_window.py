@@ -1,12 +1,14 @@
 """QMainWindow 루트 — 메인 윈도우."""
 from __future__ import annotations
 
+import asyncio
 from pathlib import Path
 
 import numpy as np
 from PySide6.QtCore import Qt, QTimer, Slot
-from PySide6.QtGui import QDragEnterEvent, QDropEvent, QKeySequence, QAction
+from PySide6.QtGui import QAction, QActionGroup, QDragEnterEvent, QDropEvent, QKeySequence
 from PySide6.QtWidgets import (
+    QApplication,
     QFileDialog,
     QMainWindow,
     QMessageBox,
@@ -33,8 +35,13 @@ from src.gui.widgets.job_queue_panel import JobQueuePanel
 from src.gui.widgets.progress_panel import ProgressPanel
 from src.gui.widgets.region_editor import RegionEditorPanel
 from src.gui.widgets.region_overlay import RegionOverlayManager
+from src.gui.theme import apply_theme, normalize_theme_name
 from src.gui.workers.batch_worker import BatchWorker
-from src.gui.workers.pipeline_worker import RegionReprocessWorker, WorkerPool
+from src.gui.workers.pipeline_worker import (
+    RegionPreviewWorker,
+    RegionReprocessWorker,
+    WorkerPool,
+)
 from src.models.processing_job import ProcessingJob
 from src.utils.logger import get_logger
 
@@ -57,6 +64,20 @@ class MainWindow(QMainWindow):
         self._worker_pool = WorkerPool(pipeline, max_concurrent=2)
         self._current_job: ProcessingJob | None = None
         self._batch_worker: BatchWorker | None = None
+        self._reprocess_workers: dict[str, RegionReprocessWorker] = {}
+        self._preview_worker: RegionPreviewWorker | None = None
+        self._preview_debounce = QTimer(self)
+        self._preview_debounce.setSingleShot(True)
+        self._preview_debounce.setInterval(350)
+        self._preview_debounce.timeout.connect(self._start_preview_worker)
+        self._pending_preview_region_id: str | None = None
+        self._pending_preview_text = ""
+        self._preview_request_id = 0
+        self._latest_preview_request_id = -1
+        self._latest_preview_region_id: str | None = None
+        self._latest_preview_text: str | None = None
+        self._latest_preview_image: np.ndarray | None = None
+        self._chat_stream_active = False
         self._chat_session = ConversationSession()
         self._msg_parser = MessageParser()
 
@@ -95,6 +116,9 @@ class MainWindow(QMainWindow):
 
         self._region_editor = RegionEditorPanel()
         self._region_editor.translation_changed.connect(self._on_translation_edited)
+        self._region_editor.translation_preview_requested.connect(
+            self._on_translation_preview_requested
+        )
         self._region_editor.reprocess_requested.connect(self._on_reprocess_requested)
         right_splitter.addWidget(self._region_editor)
 
@@ -139,6 +163,19 @@ class MainWindow(QMainWindow):
         settings_action = QAction("설정 열기", self)
         settings_action.triggered.connect(self._open_settings)
         settings_menu.addAction(settings_action)
+
+        view_menu = menubar.addMenu("보기(&V)")
+        self._theme_action_group = QActionGroup(self)
+        self._theme_action_group.setExclusive(True)
+        self._dark_theme_action = QAction("다크 테마", self, checkable=True)
+        self._light_theme_action = QAction("라이트 테마", self, checkable=True)
+        self._theme_action_group.addAction(self._dark_theme_action)
+        self._theme_action_group.addAction(self._light_theme_action)
+        self._dark_theme_action.triggered.connect(lambda checked: checked and self._set_theme("dark"))
+        self._light_theme_action.triggered.connect(lambda checked: checked and self._set_theme("light"))
+        view_menu.addAction(self._dark_theme_action)
+        view_menu.addAction(self._light_theme_action)
+        self._sync_theme_actions()
 
     def _setup_toolbar(self) -> None:
         toolbar = QToolBar("도구 모음")
@@ -242,7 +279,7 @@ class MainWindow(QMainWindow):
         default = self._current_job.input_path.with_stem(
             self._current_job.input_path.stem + "_translated"
         )
-        dlg = ExportDialog(default, self)
+        dlg = ExportDialog(default, self._config, self)
         if dlg.exec() != ExportDialog.DialogCode.Accepted:
             return
 
@@ -251,10 +288,12 @@ class MainWindow(QMainWindow):
             return
 
         try:
-            import cv2
-            bgr = cv2.cvtColor(self._current_job.final_image, cv2.COLOR_RGB2BGR)
-            cv2.imwrite(str(out_path), bgr)
-            self._status_bar.showMessage(f"저장 완료: {out_path}")
+            saved_path = self._pipeline._export_service.save_image(
+                self._current_job.final_image,
+                out_path,
+                dlg.get_export_options(),
+            )
+            self._status_bar.showMessage(f"저장 완료: {saved_path}")
         except Exception as e:
             QMessageBox.critical(self, "오류", f"저장 실패:\n{e}")
 
@@ -304,6 +343,20 @@ class MainWindow(QMainWindow):
             return
         self._progress_panel.reset()
 
+    def _sync_theme_actions(self) -> None:
+        current_theme = normalize_theme_name(self._config.get("app", "theme", default="dark"))
+        self._dark_theme_action.setChecked(current_theme == "dark")
+        self._light_theme_action.setChecked(current_theme == "light")
+
+    def _set_theme(self, theme_name: str) -> None:
+        app = QApplication.instance()
+        if app is None:
+            return
+        normalized = apply_theme(app, theme_name)
+        self._config.set("app", "theme", value=normalized)
+        self._config.save()
+        self._sync_theme_actions()
+
     @Slot(str)
     def _on_job_selected(self, job_id: str) -> None:
         job = self._session.get_job(job_id)
@@ -338,9 +391,11 @@ class MainWindow(QMainWindow):
         worker = RegionReprocessWorker(
             self._pipeline, self._current_job, region_id, parent=self
         )
+        self._reprocess_workers[region_id] = worker
         worker.progress_updated.connect(self._on_progress)
         worker.region_done.connect(self._on_region_reprocess_done)
         worker.region_failed.connect(self._on_region_reprocess_failed)
+        worker.finished.connect(lambda rid=region_id: self._reprocess_workers.pop(rid, None))
         worker.start()
 
     @Slot(str, str)
@@ -363,7 +418,103 @@ class MainWindow(QMainWindow):
                 if r.region_id == region_id:
                     r.translated_text = new_text
                     self._overlay_manager.update_region(r)
+                    self._promote_preview_or_render(region_id, new_text)
                     break
+
+    @Slot(str, str)
+    def _on_translation_preview_requested(self, region_id: str, draft_text: str) -> None:
+        if self._current_job is None:
+            return
+        if self._current_job.is_running or self._reprocess_workers:
+            return
+        image_base = (
+            self._current_job.inpainted_image
+            if self._current_job.inpainted_image is not None
+            else self._current_job.original_image
+        )
+        if image_base is None:
+            return
+        self._pending_preview_region_id = region_id
+        self._pending_preview_text = draft_text
+        self._preview_request_id += 1
+        self._preview_debounce.start()
+
+    def _start_preview_worker(self) -> None:
+        if self._current_job is None or self._pending_preview_region_id is None:
+            return
+        request_id = self._preview_request_id
+        worker = RegionPreviewWorker(
+            self._pipeline,
+            self._current_job,
+            self._pending_preview_region_id,
+            self._pending_preview_text,
+            request_id,
+            parent=self,
+        )
+        self._preview_worker = worker
+        worker.preview_ready.connect(self._on_preview_ready)
+        worker.preview_failed.connect(self._on_preview_failed)
+        worker.finished.connect(self._on_preview_worker_finished)
+        worker.start()
+
+    @Slot(str, str, int, object)
+    def _on_preview_ready(
+        self,
+        job_id: str,
+        region_id: str,
+        request_id: int,
+        image: object,
+    ) -> None:
+        if self._current_job is None or self._current_job.job_id != job_id:
+            return
+        if request_id != self._preview_request_id:
+            return
+        preview_image = image if isinstance(image, np.ndarray) else None
+        if preview_image is None:
+            return
+        self._latest_preview_request_id = request_id
+        self._latest_preview_region_id = region_id
+        self._latest_preview_text = self._pending_preview_text
+        self._latest_preview_image = preview_image
+        self._image_viewer.set_image(preview_image)
+        self._comparison_view.set_translated(preview_image)
+
+    @Slot(str, str, int, str)
+    def _on_preview_failed(
+        self,
+        job_id: str,
+        region_id: str,
+        request_id: int,
+        error: str,
+    ) -> None:
+        if request_id != self._preview_request_id:
+            return
+        logger.error("영역 프리뷰 실패 [%s]: %s", region_id[:8], error)
+
+    @Slot()
+    def _on_preview_worker_finished(self) -> None:
+        self._preview_worker = None
+
+    def _promote_preview_or_render(self, region_id: str, new_text: str) -> None:
+        if self._current_job is None:
+            return
+        if (
+            self._latest_preview_image is not None
+            and self._latest_preview_region_id == region_id
+            and self._latest_preview_text == new_text
+            and self._latest_preview_request_id == self._preview_request_id
+        ):
+            self._current_job.final_image = self._latest_preview_image
+        else:
+            self._current_job.final_image = asyncio.run(
+                self._pipeline.preview_region_translation(self._current_job, region_id, new_text)
+            )
+            self._latest_preview_image = self._current_job.final_image
+            self._latest_preview_region_id = region_id
+            self._latest_preview_text = new_text
+            self._latest_preview_request_id = self._preview_request_id
+        self._image_viewer.set_image(self._current_job.final_image)
+        self._comparison_view.set_translated(self._current_job.final_image)
 
     # --- 채팅 패널 슬롯 ---
 
@@ -388,6 +539,8 @@ class MainWindow(QMainWindow):
             parent=self,
         )
         self._batch_worker.agent_message.connect(self._on_agent_message)
+        self._batch_worker.agent_stream_chunk.connect(self._on_agent_stream_chunk)
+        self._batch_worker.agent_stream_finished.connect(self._on_agent_stream_finished)
         self._batch_worker.job_progress.connect(
             lambda name, cur, total: self._chat_panel.update_progress(cur, total)
         )
@@ -398,7 +551,23 @@ class MainWindow(QMainWindow):
 
     @Slot(str)
     def _on_agent_message(self, message: str) -> None:
+        if self._chat_stream_active:
+            self._chat_panel.finish_stream()
+            self._chat_stream_active = False
         self._chat_panel.add_message("assistant", message)
+
+    @Slot(str)
+    def _on_agent_stream_chunk(self, chunk: str) -> None:
+        if not self._chat_stream_active:
+            self._chat_panel.start_stream("assistant")
+            self._chat_stream_active = True
+        self._chat_panel.append_stream_chunk(chunk)
+
+    @Slot()
+    def _on_agent_stream_finished(self) -> None:
+        if self._chat_stream_active:
+            self._chat_panel.finish_stream()
+            self._chat_stream_active = False
 
     @Slot(object)
     def _on_batch_completed(self, result: object) -> None:
@@ -411,4 +580,5 @@ class MainWindow(QMainWindow):
     def _cancel_batch(self) -> None:
         if self._batch_worker and self._batch_worker.isRunning():
             self._batch_worker.cancel()
+            self._on_agent_stream_finished()
             self._chat_panel.add_message("system", "배치 취소 요청됨")

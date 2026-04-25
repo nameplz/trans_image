@@ -18,6 +18,7 @@ class ImageViewer(QGraphicsView):
 
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
+        self.setObjectName("imageViewer")
         self._scene = QGraphicsScene(self)
         self._pixmap_item: QGraphicsPixmapItem | None = None
         self._zoom = 1.0
@@ -36,7 +37,6 @@ class ImageViewer(QGraphicsView):
         self.setDragMode(QGraphicsView.DragMode.ScrollHandDrag)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.setBackgroundBrush(Qt.GlobalColor.darkGray)
 
     def set_image(self, image: np.ndarray) -> None:
         """numpy RGB 배열 → 뷰어에 표시."""

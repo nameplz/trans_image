@@ -67,6 +67,7 @@ uv run python -m trans_image --input image.png --output result.png \
 
 ## API 키 설정
 
+기본 설정 파일(`config/default_config.yaml`)에는 실제 API 키를 넣지 않습니다.
 `.env.example`을 복사해 `.env`를 만들고 키를 채우세요.
 
 ```bash
@@ -84,6 +85,7 @@ PAPAGO_CLIENT_SECRET=...
 ```
 
 > `.env`는 `.gitignore`에 포함되어 있어 절대 커밋되지 않습니다.
+> 이미 소스에 노출된 키가 있었다면 즉시 폐기하고 새 키로 교체하세요.
 
 ---
 

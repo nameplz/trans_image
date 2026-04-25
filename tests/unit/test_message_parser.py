@@ -168,6 +168,10 @@ class TestAgentParsing:
         result = parser.parse("@./images grok 에이전트로 해줘", cwd)
         assert result.agent_id == "grok"
 
+    def test_natural_gemini_agent(self, parser, cwd):
+        result = parser.parse("@./images gemini 에이전트로 해줘", cwd)
+        assert result.agent_id == "gemini"
+
     def test_natural_claude_agent(self, parser, cwd):
         result = parser.parse("@./images claude 에이전트 써줘", cwd)
         assert result.agent_id == "claude"

@@ -5,6 +5,40 @@
 
 ---
 
+## 2026-04-25: 설정 및 문서 정리
+
+### 변경
+
+- `config/default_config.yaml` — API 설정 기본값과 환경변수 안내 정리
+- `setup.md`, `README.md` — 환경변수/`.env` 기반 API 키 설정만 안내하도록 정리
+
+### 보안 메모
+
+- 기본 설정 파일에는 실제 시크릿을 저장하지 않는 정책으로 정리
+
+## 2026-04-25: Gemini 번역 보조 에이전트 추가
+
+### 추가
+
+- `src/plugins/agents/gemini_agent.py` — Google Gemini 기반 번역 보조 에이전트 플러그인 추가
+  - OCR 결과 분석
+  - 번역 컨텍스트 생성
+  - 번역 검증
+  - GUI용 스트리밍 분석
+- `config/plugins.yaml` — `agents.gemini` 등록 (`GOOGLE_API_KEY`, `gemini-1.5-flash`)
+
+### 변경
+
+- `src/chat/message_parser.py` — `gemini 에이전트` 자연어 파싱 지원
+- `src/chat/chat_agent.py` — LLM intent schema의 `agent_id` 허용 목록에 `gemini` 추가
+- `docs/plugins.md` — 지원 에이전트 목록에 Gemini 추가
+
+### 테스트
+
+- `tests/unit/test_agent_plugins.py` — Gemini agent 테스트 추가
+- `tests/unit/test_message_parser.py` — `gemini 에이전트` 파싱 테스트 추가
+- `uv run pytest tests/unit/test_agent_plugins.py tests/unit/test_message_parser.py` → **74 passed**
+
 ## 2026-04-25: Wave 4 완료 — 통합 테스트 보강 + 커버리지 81%
 
 ### 추가

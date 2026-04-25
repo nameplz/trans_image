@@ -1,4 +1,4 @@
-"""에이전트 플러그인 단위 테스트 (Claude, OpenAI, Ollama)."""
+"""에이전트 플러그인 단위 테스트 (Claude, OpenAI, Gemini, Ollama)."""
 from __future__ import annotations
 
 import json
@@ -155,6 +155,93 @@ class TestOpenAIAgentPlugin:
         """API 키 없음 → validate_config 오류 반환."""
         from src.plugins.agents.openai_agent import OpenAIAgentPlugin
         plugin = OpenAIAgentPlugin(config={"api_key": ""})
+        errors = plugin.validate_config()
+        assert len(errors) > 0
+
+
+# ── Gemini ────────────────────────────────────────────────────────────────────
+
+class TestGeminiAgentPlugin:
+    async def test_analyze_ocr_results_returns_regions(self):
+        """analyze_ocr_results → region 목록 반환."""
+        from src.plugins.agents.gemini_agent import GeminiAgentPlugin
+
+        regions = [make_region("Text1", 0), make_region("Text2", 1)]
+        response_json = json.dumps([
+            {"id": regions[0].region_id, "corrected_text": "Text1!", "reading_order": 1},
+            {"id": regions[1].region_id, "corrected_text": "Text2!", "reading_order": 0},
+        ])
+
+        plugin = GeminiAgentPlugin(config={"api_key": "test-key"})
+        plugin._loaded = True
+        plugin._call = AsyncMock(return_value=response_json)
+
+        result = await plugin.analyze_ocr_results(regions)
+        assert len(result) == 2
+        assert result[0].reading_order == 0
+
+    async def test_generate_translation_context_returns_dict(self):
+        """generate_translation_context → dict 반환."""
+        from src.plugins.agents.gemini_agent import GeminiAgentPlugin
+
+        regions = [make_region("Hello")]
+        job = make_job()
+        response_json = json.dumps({regions[0].region_id: "말풍선 텍스트"})
+
+        plugin = GeminiAgentPlugin(config={"api_key": "test-key"})
+        plugin._loaded = True
+        plugin._call = AsyncMock(return_value=response_json)
+
+        result = await plugin.generate_translation_context(regions, job)
+        assert isinstance(result, dict)
+        assert result[regions[0].region_id] == "말풍선 텍스트"
+
+    async def test_validate_translations_flags_needs_review(self):
+        """validate_translations → needs_review 플래그 업데이트."""
+        from src.plugins.agents.gemini_agent import GeminiAgentPlugin
+
+        orig = [make_region("Hello"), make_region("World")]
+        trans = [
+            TextRegion(
+                region_id=orig[0].region_id,
+                raw_text="Hello",
+                translated_text="안녕",
+                confidence=0.9,
+                bbox=BoundingBox(x=0, y=0, width=100, height=25),
+            ),
+            TextRegion(
+                region_id=orig[1].region_id,
+                raw_text="World",
+                translated_text="세계",
+                confidence=0.9,
+                bbox=BoundingBox(x=0, y=30, width=100, height=25),
+            ),
+        ]
+
+        plugin = GeminiAgentPlugin(config={"api_key": "test-key"})
+        plugin._loaded = True
+        plugin._call = AsyncMock(return_value=json.dumps([orig[1].region_id]))
+
+        result = await plugin.validate_translations(orig, trans)
+        assert result[0].needs_review is False
+        assert result[1].needs_review is True
+
+    async def test_stream_analysis_yields_text_chunks(self):
+        """stream_analysis → 모델 응답 텍스트를 청크로 분할 yield."""
+        from src.plugins.agents.gemini_agent import GeminiAgentPlugin
+
+        plugin = GeminiAgentPlugin(config={"api_key": "test-key"})
+        plugin._loaded = True
+        plugin._call = AsyncMock(return_value="abcdef")
+
+        chunks = [chunk async for chunk in plugin.stream_analysis("prompt")]
+        assert "".join(chunks) == "abcdef"
+
+    def test_validate_config_no_key(self):
+        """API 키 없음 → validate_config 오류 반환."""
+        from src.plugins.agents.gemini_agent import GeminiAgentPlugin
+
+        plugin = GeminiAgentPlugin(config={"api_key": ""})
         errors = plugin.validate_config()
         assert len(errors) > 0
 

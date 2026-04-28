@@ -70,3 +70,10 @@ temp/
 
 # 샘플
 sample/
+
+# Graphify 산출물
+graphify-out/cache/
+graphify-out/memory/
+graphify-out/cost.json
+graphify-out/manifest.json
+graphify-out/.graphify_python

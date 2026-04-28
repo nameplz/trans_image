@@ -1,6 +1,6 @@
 # 플러그인 개발 가이드
 
-> CLAUDE.md에서 `@docs/plugin-dev-guide.md`로 참조됩니다.
+> AGENTS.md에서 참조됩니다.
 
 ## 새 번역 플러그인 추가
 

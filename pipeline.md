@@ -1,6 +1,6 @@
 # 파이프라인 흐름
 
-> CLAUDE.md에서 `@docs/pipeline.md`로 참조됩니다.
+> AGENTS.md에서 참조됩니다.
 
 ## 전체 흐름
 

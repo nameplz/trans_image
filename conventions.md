@@ -1,6 +1,6 @@
 # 코딩 컨벤션
 
-> CLAUDE.md에서 `@docs/conventions.md`로 참조됩니다.
+> AGENTS.md에서 참조됩니다.
 
 ## Python 스타일
 

@@ -1,6 +1,6 @@
 # 핵심 데이터 구조
 
-> CLAUDE.md에서 `@docs/data-models.md`로 참조됩니다.
+> AGENTS.md에서 참조됩니다.
 
 ## TextRegion (`src/models/text_region.py`)
 

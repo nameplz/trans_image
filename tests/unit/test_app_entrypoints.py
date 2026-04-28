@@ -1,13 +1,16 @@
-"""app.py 및 __main__.py 진입점 테스트."""
+"""Public GUI/CLI entrypoint contract tests."""
 from __future__ import annotations
 
 import argparse
+import importlib
+import sys
+import tomllib
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from src.app import create_app, run_gui
+from src.app import create_app, main as gui_main, run_gui
 from src.models.processing_job import ProcessingJob
 
 
@@ -53,6 +56,32 @@ class TestCreateApp:
         window.show.assert_called_once()
         assert result == 123
 
+    def test_gui_main_delegates_to_run_gui(self):
+        with patch("src.app.run_gui", return_value=7) as mock_run_gui:
+            result = gui_main(["trans-image"])
+
+        mock_run_gui.assert_called_once_with(["trans-image"])
+        assert result == 7
+
+
+class TestRootGuiLauncher:
+    def test_root_main_delegates_to_src_app_main(self):
+        module = importlib.import_module("main")
+
+        with patch("src.app.main", return_value=11) as mock_gui_main:
+            result = module.main()
+
+        mock_gui_main.assert_called_once_with(sys.argv)
+        assert result == 11
+
+
+class TestPackagingContract:
+    def test_console_script_targets_gui_entrypoint(self):
+        pyproject_path = Path(__file__).resolve().parents[2] / "pyproject.toml"
+        config = tomllib.loads(pyproject_path.read_text(encoding="utf-8"))
+
+        assert config["project"]["scripts"]["trans-image"] == "src.app:main"
+
 
 class TestCliEntrypoint:
     def test_parse_args_uses_defaults(self):
@@ -66,6 +95,19 @@ class TestCliEntrypoint:
         assert args.source_lang == "auto"
         assert args.translator == "deepl"
         assert args.no_agent is False
+
+    def test_cli_main_parses_args_and_returns_async_result(self):
+        from src.__main__ import main
+
+        args = argparse.Namespace(input="input.png")
+
+        with patch("src.__main__.parse_args", return_value=args), \
+             patch("src.__main__.asyncio.run", return_value=5) as mock_asyncio_run, \
+             patch("src.__main__.run_cli", new_callable=MagicMock) as mock_run_cli:
+            result = main()
+
+        mock_asyncio_run.assert_called_once_with(mock_run_cli.return_value)
+        assert result == 5
 
     @pytest.mark.asyncio
     async def test_run_cli_returns_error_for_missing_input(self, tmp_path):

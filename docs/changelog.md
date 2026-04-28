@@ -1,5 +1,38 @@
 # Changelog
 
+## 2026-04-28: Wave A 아키텍처 안정화 마감
+
+- **A1 엔트리포인트/패키징 정합성**
+  - `pyproject.toml`의 `trans-image` script를 `src.app:main`으로 정리
+  - `main.py`는 GUI 공개 진입점만 호출하도록 정리
+  - CLI 공개 진입점을 `python -m src` 기준으로 정리
+  - `README.md`, `setup.md`의 실행 예시를 현재 공개 진입점 기준으로 갱신
+
+- **A2 ConfigManager 단일 진실원 정리**
+  - `ConfigManager.set()` 이후 typed settings snapshot 즉시 갱신
+  - `SettingsPanel` 초기값과 저장 경로를 typed settings 기준으로 통일
+  - `SettingsDialog`에서 `OK` 시 `ConfigManager.save()` 호출, 저장 실패는 다이얼로그 에러로 처리
+
+- **A3 Pipeline 공개 경계 복구**
+  - `Pipeline.export_image()` 공개 메서드 추가
+  - GUI가 `Pipeline` 내부 구현(`_export_service`)에 직접 접근하지 않도록 제거
+  - export 흐름을 `MainWindow -> JobController -> Pipeline` 경계로 정리
+
+- **A4 WorkerPool / Session 책임 정리**
+  - `WorkerPool.max_concurrent=2`를 실제 제한으로 강제
+  - 동시 실행 초과 정책을 “즉시 거절”로 고정
+  - `Session`은 작업 저장/조회만 담당하고, 실행 스케줄링은 `WorkerPool`이 담당하도록 역할 분리
+  - 단일 이미지 작업은 제한 초과 시 UI 경고를 표시하고 rejected job을 세션에 남기지 않도록 정리
+
+- **A5 검증 및 문서 정리**
+  - 엔트리포인트, 설정 저장/재적용, export 공개 경계, 동시성 제한 회귀 테스트 보강
+  - 실행/설정 동작 기준을 `README.md`, `setup.md`, `TODO.md`에 반영
+
+- **테스트 및 검증**
+  - 부분 회귀: 엔트리포인트/설정/UI/controller 관련 테스트 `91 passed`
+  - 전체 회귀: `uv run pytest --cov=src --cov-report=term-missing` → `421 passed`, 총 커버리지 `82%`
+  - `graphify update .` 실행으로 지식 그래프 최신화
+
 ## 2026-04-25: [H] Phase 7 고급 기능 완성
 
 - **7-1 테마 전환**

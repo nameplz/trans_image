@@ -12,7 +12,14 @@ class FakeSettingsPanel(QWidget):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(kwargs.get("parent"))
         self.apply_calls = 0
-        self.current_settings = {"theme": "light"}
+        self.current_settings = {
+            "source_lang": "en",
+            "target_lang": "ko",
+            "ocr_plugin": "easyocr",
+            "translator_plugin": "deepl",
+            "agent_plugin": "claude",
+            "use_agent": True,
+        }
 
     def _on_apply(self) -> None:
         self.apply_calls += 1
@@ -34,6 +41,7 @@ class TestSettingsDialog:
             dialog._on_ok()
 
         assert dialog._panel.apply_calls == 1
+        config.save.assert_called_once_with()
         dialog.accept.assert_called_once()
 
     def test_get_settings_delegates_to_panel(self, qtbot):
@@ -46,4 +54,11 @@ class TestSettingsDialog:
 
             result = dialog.get_settings()
 
-        assert result == {"theme": "light"}
+        assert result == {
+            "source_lang": "en",
+            "target_lang": "ko",
+            "ocr_plugin": "easyocr",
+            "translator_plugin": "deepl",
+            "agent_plugin": "claude",
+            "use_agent": True,
+        }

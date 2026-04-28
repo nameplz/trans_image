@@ -1,6 +1,7 @@
 """SettingsPanel 단위 테스트."""
 from __future__ import annotations
 
+from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 import pytest
@@ -17,9 +18,20 @@ def settings_deps():
     config.get.side_effect = lambda *args, **kw: {
         ("processing", "default_source_lang"): "en",
         ("processing", "default_target_lang"): "ko",
+        ("processing", "default_ocr_plugin"): "easyocr",
+        ("processing", "default_translator_plugin"): "gemini",
+        ("processing", "default_agent_plugin"): "gemini_agent",
         ("processing", "use_agent"): True,
     }.get(args, kw.get("default"))
     config.set = MagicMock()
+    config.processing_settings = SimpleNamespace(
+        default_source_lang="en",
+        default_target_lang="ko",
+        default_ocr_plugin="easyocr",
+        default_translator_plugin="gemini",
+        default_agent_plugin="gemini_agent",
+        use_agent=True,
+    )
 
     pm = MagicMock(spec=PluginManager)
     pm.list_available.side_effect = lambda t: {
@@ -68,6 +80,9 @@ class TestSettingsPanel:
         result = panel.get_current_settings()
         assert result["source_lang"] == "en"
         assert result["target_lang"] == "ko"
+        assert result["ocr_plugin"] == "easyocr"
+        assert result["translator_plugin"] == "gemini"
+        assert result["agent_plugin"] == "gemini_agent"
         assert result["use_agent"] is True
 
     def test_apply_saves_to_config(self, qtbot, settings_deps):
@@ -81,7 +96,16 @@ class TestSettingsPanel:
         calls = {call.args[:2]: call.kwargs.get("value") for call in config.set.call_args_list}
         assert ("processing", "default_source_lang") in calls
         assert ("processing", "default_target_lang") in calls
+        assert ("processing", "default_ocr_plugin") in calls
+        assert ("processing", "default_translator_plugin") in calls
+        assert ("processing", "default_agent_plugin") in calls
         assert ("processing", "use_agent") in calls
+
+    def test_current_plugin_selection_loaded_from_config(self, panel):
+        """기본 플러그인 선택은 저장된 config 값을 따라야 한다."""
+        assert panel._ocr_combo.currentText() == "easyocr"
+        assert panel._translator_combo.currentText() == "gemini"
+        assert panel._agent_combo.currentText() == "gemini_agent"
 
     def test_apply_emits_settings_changed(self, qtbot, settings_deps):
         """설정 적용 시 settings_changed 시그널이 emit 되어야 한다."""

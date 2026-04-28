@@ -8,6 +8,7 @@ import numpy as np
 import pytest
 
 from src.core.exceptions import PipelineError
+from src.core.exceptions import ConcurrencyLimitError
 from src.gui.workers.pipeline_worker import (
     PipelineWorker,
     RegionPreviewWorker,
@@ -184,3 +185,11 @@ class TestWorkerPool:
 
         worker_a.cancel.assert_called()
         worker_b.cancel.assert_called_once()
+
+    def test_submit_rejects_when_at_capacity(self, sample_job):
+        pipeline = MagicMock()
+        pool = WorkerPool(pipeline, max_concurrent=1)
+        pool._workers = {"running-job": MagicMock()}
+
+        with pytest.raises(ConcurrencyLimitError, match="동시 실행 제한"):
+            pool.submit(sample_job)

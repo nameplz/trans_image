@@ -1,4 +1,4 @@
-"""QApplication 래퍼 — 앱 초기화."""
+"""Public GUI entrypoints and QApplication wiring."""
 from __future__ import annotations
 
 import sys
@@ -47,3 +47,8 @@ def run_gui(argv: list[str] | None = None) -> int:
     app, window = create_app(argv)
     window.show()
     return app.exec()
+
+
+def main(argv: list[str] | None = None) -> int:
+    """Public GUI entrypoint used by the launcher script."""
+    return run_gui(argv)

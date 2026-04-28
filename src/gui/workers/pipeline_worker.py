@@ -7,6 +7,7 @@ from typing import Any
 
 from PySide6.QtCore import QThread, Signal
 
+from src.core.exceptions import ConcurrencyLimitError
 from src.core.pipeline import Pipeline
 from src.models.processing_job import ProcessingJob
 from src.utils.logger import get_logger
@@ -188,6 +189,10 @@ class WorkerPool:
 
     def submit(self, job: ProcessingJob, parent=None) -> PipelineWorker:
         """작업을 새 워커에 제출."""
+        if self.is_at_capacity:
+            raise ConcurrencyLimitError(
+                f"동시 실행 제한({self._max})을 초과했습니다. 현재 실행 중인 작업이 끝난 후 다시 시도해 주세요."
+            )
         worker = PipelineWorker(self._pipeline, job, parent=parent)
         self._workers[job.job_id] = worker
         worker.finished.connect(lambda: self._workers.pop(job.job_id, None))

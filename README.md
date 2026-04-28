@@ -58,10 +58,19 @@ uv sync --extra dev
 # GUI 모드
 uv run python main.py
 
+# 설치된 프로젝트 스크립트
+uv run trans-image
+
 # CLI 모드
-uv run python -m trans_image --input image.png --output result.png \
+uv run python -m src --input image.png --output result.png \
   --target-lang ko --translator deepl --agent claude
 ```
+
+## 실행/설정 기준
+
+- `설정` 다이얼로그에서 저장한 기본 언어, 플러그인, `use_agent`, 테마는 다음 실행에도 유지됩니다.
+- 단일 이미지 처리는 동시에 최대 2개까지만 실행됩니다.
+- 최대 동시 실행 수에 도달하면 새 단일 이미지 작업은 즉시 거절되고 경고 메시지가 표시됩니다.
 
 ---
 

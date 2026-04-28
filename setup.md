@@ -5,7 +5,8 @@
 ## 의존성 설치
 
 ```bash
-pip install -e ".[dev]"
+uv sync
+uv sync --extra dev
 ```
 
 ## API 키 설정
@@ -29,12 +30,21 @@ export PAPAGO_CLIENT_SECRET="your-papago-client-secret"
 
 ```bash
 # GUI 모드
-python main.py
+uv run python main.py
+
+# 설치된 프로젝트 스크립트
+uv run trans-image
 
 # CLI 모드
-python -m trans_image --input image.png --output result.png \
+uv run python -m src --input image.png --output result.png \
   --target-lang ko --translator deepl --agent claude
 ```
+
+## 현재 동작 기준
+
+- `설정` 다이얼로그에서 변경한 값은 `ConfigManager.save()`를 통해 영속 저장되며 다음 실행에도 다시 적용된다.
+- 단일 이미지 처리는 `WorkerPool(max_concurrent=2)` 기준으로 동시에 최대 2개까지만 실행된다.
+- 동시 실행 제한을 넘는 새 단일 이미지 작업은 대기열 적재 대신 즉시 거절된다.
 
 ## 테스트
 

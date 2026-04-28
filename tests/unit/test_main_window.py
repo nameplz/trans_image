@@ -2,10 +2,12 @@
 from __future__ import annotations
 
 import numpy as np
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
 
+from src.core.exceptions import ConcurrencyLimitError
 from src.gui.main_window import MainWindow
 
 
@@ -154,6 +156,34 @@ class TestStreamingAndTheme:
         window._config.save.assert_called_once()
 
 
+class TestStartProcessing:
+    def test_start_processing_warns_when_pool_is_full(self, qtbot):
+        window = make_main_window(qtbot)
+        window._loaded_image_path = Path("/tmp/input.png")
+
+        with patch("src.gui.main_window.SettingsDialog") as MockDialog, \
+             patch("src.gui.main_window.QMessageBox.warning") as mock_warning:
+            dialog = MockDialog.return_value
+            dialog.exec.return_value = MockDialog.DialogCode.Accepted
+            dialog.get_settings.return_value = {
+                "target_lang": "ko",
+                "source_lang": "auto",
+                "ocr_plugin": "easyocr",
+                "translator_plugin": "deepl",
+                "agent_plugin": "claude",
+                "use_agent": True,
+            }
+            window._job_controller.start_processing = MagicMock(
+                side_effect=ConcurrencyLimitError(
+                    "현재 단일 이미지 작업이 최대 동시 실행 수에 도달했습니다."
+                )
+            )
+
+            window._start_processing()
+
+        mock_warning.assert_called_once()
+
+
 class TestPreviewApply:
     def test_preview_ready_updates_view_only(self, qtbot):
         window = make_main_window(qtbot)
@@ -195,3 +225,46 @@ class TestPreviewApply:
 
         assert region.translated_text == "draft"
         assert job.final_image is preview
+
+
+class TestExportFlow:
+    def test_export_delegates_to_job_controller(self, qtbot):
+        window = make_main_window(qtbot)
+        final_image = np.ones((10, 10, 3), dtype=np.uint8)
+        window._current_job = MagicMock()
+        window._current_job.final_image = final_image
+        window._current_job.input_path = Path("/tmp/input.png")
+        expected_path = Path("/tmp/out.png")
+
+        with patch("src.gui.main_window.ExportDialog") as MockDialog:
+            dialog = MockDialog.return_value
+            dialog.exec.return_value = MockDialog.DialogCode.Accepted
+            dialog.get_output_path.return_value = expected_path
+            dialog.get_export_options.return_value = MagicMock()
+            window._job_controller.export_current_image = MagicMock(return_value=expected_path)
+
+            window._export()
+
+        window._job_controller.export_current_image.assert_called_once_with(
+            expected_path,
+            dialog.get_export_options.return_value,
+        )
+        assert window._status_bar.currentMessage() == f"저장 완료: {expected_path}"
+
+    def test_export_error_shows_message_box(self, qtbot):
+        window = make_main_window(qtbot)
+        window._current_job = MagicMock()
+        window._current_job.final_image = np.ones((10, 10, 3), dtype=np.uint8)
+        window._current_job.input_path = Path("/tmp/input.png")
+
+        with patch("src.gui.main_window.ExportDialog") as MockDialog, \
+             patch("src.gui.main_window.QMessageBox.critical") as mock_critical:
+            dialog = MockDialog.return_value
+            dialog.exec.return_value = MockDialog.DialogCode.Accepted
+            dialog.get_output_path.return_value = Path("/tmp/out.png")
+            dialog.get_export_options.return_value = MagicMock()
+            window._job_controller.export_current_image = MagicMock(side_effect=RuntimeError("save failed"))
+
+            window._export()
+
+        mock_critical.assert_called_once()

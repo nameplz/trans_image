@@ -285,6 +285,20 @@ class TestPipelineEdgeCases:
         assert job.translated_regions == 1
 
 
+class TestPipelinePublicBoundary:
+    def test_export_image_delegates_to_export_service(self, mock_pipeline, tmp_path):
+        pipeline, _, _ = mock_pipeline
+        image = np.zeros((10, 10, 3), dtype=np.uint8)
+        output_path = tmp_path / "result.png"
+        expected = tmp_path / "saved.png"
+        pipeline._export_service.save_image = MagicMock(return_value=expected)
+
+        saved_path = pipeline.export_image(image, output_path)
+
+        pipeline._export_service.save_image.assert_called_once()
+        assert saved_path == expected
+
+
 class TestPipelinePreview:
     async def test_preview_region_translation_does_not_mutate_job(self, mock_pipeline, tmp_path):
         pipeline, _, _ = mock_pipeline

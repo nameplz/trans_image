@@ -197,3 +197,59 @@ class TestGetApiKeyDefensiveAgainstDict:
         assert len(caplog.records) >= 1
         warning_messages = [r.message for r in caplog.records if r.levelno >= logging.WARNING]
         assert any("DEEPL_API_KEY" in msg or "deepl" in msg.lower() for msg in warning_messages)
+
+
+class TestTypedSettingsSynchronization:
+    """raw config와 typed settings가 같은 값을 보도록 유지한다."""
+
+    def test_set_updates_processing_typed_settings_and_raw_config(self, tmp_path):
+        cfg_path = _write_yaml(
+            tmp_path,
+            {
+                "processing": {
+                    "default_target_lang": "ko",
+                    "default_ocr_plugin": "easyocr",
+                    "default_translator_plugin": "deepl",
+                    "default_agent_plugin": "claude",
+                    "use_agent": True,
+                }
+            },
+        )
+        mgr = ConfigManager(config_path=cfg_path, plugins_path=_plugins_yaml(tmp_path))
+        mgr.load()
+
+        mgr.set("processing", "default_target_lang", value="ja")
+        mgr.set("processing", "default_translator_plugin", value="gemini")
+        mgr.set("processing", "use_agent", value=False)
+
+        assert mgr.get("processing", "default_target_lang") == "ja"
+        assert mgr.get("processing", "default_translator_plugin") == "gemini"
+        assert mgr.get("processing", "use_agent") is False
+        assert mgr.processing_settings.default_target_lang == "ja"
+        assert mgr.processing_settings.default_translator_plugin == "gemini"
+        assert mgr.processing_settings.use_agent is False
+
+    def test_set_updates_app_typed_settings_and_persists_after_reload(self, tmp_path):
+        cfg_path = _write_yaml(
+            tmp_path,
+            {
+                "app": {
+                    "theme": "dark",
+                    "language": "ko",
+                }
+            },
+        )
+        mgr = ConfigManager(config_path=cfg_path, plugins_path=_plugins_yaml(tmp_path))
+        mgr.load()
+
+        mgr.set("app", "theme", value="light")
+        mgr.set("app", "language", value="en")
+        mgr.save()
+
+        reloaded = ConfigManager(config_path=cfg_path, plugins_path=_plugins_yaml(tmp_path))
+        reloaded.load()
+
+        assert reloaded.get("app", "theme") == "light"
+        assert reloaded.get("app", "language") == "en"
+        assert reloaded.app_settings.theme == "light"
+        assert reloaded.app_settings.language == "en"

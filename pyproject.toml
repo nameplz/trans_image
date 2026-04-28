@@ -49,7 +49,7 @@ dev = [
 ]
 
 [project.scripts]
-trans-image = "trans_image.__main__:main"
+trans-image = "src.app:main"
 
 [tool.setuptools.packages.find]
 where = ["."]

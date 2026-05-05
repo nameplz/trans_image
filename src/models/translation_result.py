@@ -15,6 +15,8 @@ class TranslationResult:
     target_lang: str
     error: str = ""
     confidence: float = 1.0
+    plugin_id: str = ""
+    latency_ms: float = 0.0
 
     @property
     def is_success(self) -> bool:

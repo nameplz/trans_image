@@ -8,12 +8,15 @@ from typing import Any
 import yaml
 
 from src.core.exceptions import ConfigError
+from src.core.plugin_registry_models import PluginEntry, PluginRegistry
+from src.core.settings_models import AppSettings, ChatSettings, ProcessingSettings, RenderingSettings
 from src.utils.logger import get_logger
 
 logger = get_logger("trans_image.config")
 
 _DEFAULT_CONFIG_PATH = Path(__file__).parent.parent.parent / "config" / "default_config.yaml"
 _PLUGINS_CONFIG_PATH = Path(__file__).parent.parent.parent / "config" / "plugins.yaml"
+_MAX_RECENT_FILES = 10
 
 
 class ConfigManager:
@@ -28,11 +31,18 @@ class ConfigManager:
         self._plugins_path = plugins_path or _PLUGINS_CONFIG_PATH
         self._config: dict[str, Any] = {}
         self._plugins: dict[str, Any] = {}
+        self._app_settings = AppSettings()
+        self._processing_settings = ProcessingSettings()
+        self._rendering_settings = RenderingSettings()
+        self._chat_settings = ChatSettings()
+        self._plugin_registry = PluginRegistry()
 
     def load(self) -> None:
         """설정 파일 로드. 앱 시작 시 한 번 호출."""
         self._config = self._load_yaml(self._config_path)
         self._plugins = self._load_yaml(self._plugins_path)
+        self._refresh_all_typed_settings()
+        self._plugin_registry = PluginRegistry.from_dict(self._plugins)
         logger.info("설정 로드 완료: %s", self._config_path)
 
     def _load_yaml(self, path: Path) -> dict[str, Any]:
@@ -52,6 +62,14 @@ class ConfigManager:
         except OSError as e:
             raise ConfigError(f"설정 저장 실패: {e}") from e
 
+    def save_plugins(self) -> None:
+        """현재 플러그인 레지스트리를 파일에 저장."""
+        try:
+            with open(self._plugins_path, "w", encoding="utf-8") as f:
+                yaml.dump(self._plugins, f, allow_unicode=True, default_flow_style=False)
+        except OSError as e:
+            raise ConfigError(f"플러그인 설정 저장 실패: {e}") from e
+
     # --- 설정 조회 ---
 
     def get(self, *keys: str, default: Any = None) -> Any:
@@ -67,10 +85,88 @@ class ConfigManager:
 
     def set(self, *keys: str, value: Any) -> None:
         """점 경로로 설정 업데이트."""
+        if not keys:
+            raise ConfigError("설정 경로가 비어 있습니다.")
         node = self._config
         for key in keys[:-1]:
-            node = node.setdefault(key, {})
+            child = node.get(key)
+            if not isinstance(child, dict):
+                child = {}
+                node[key] = child
+            node = child
         node[keys[-1]] = value
+        self._refresh_typed_settings_for_section(keys[0])
+
+    def set_plugin_config_value(
+        self,
+        plugin_type: str,
+        plugin_id: str,
+        config_key: str,
+        *,
+        value: Any,
+    ) -> None:
+        entries = self._plugins.get(plugin_type)
+        if not isinstance(entries, list):
+            raise ConfigError(f"플러그인 섹션 누락 또는 타입 오류: {plugin_type}")
+
+        for entry in entries:
+            if not isinstance(entry, dict):
+                continue
+            if entry.get("id") != plugin_id:
+                continue
+
+            config = entry.get("config")
+            if not isinstance(config, dict):
+                config = {}
+                entry["config"] = config
+            config[config_key] = value
+            self._plugin_registry = PluginRegistry.from_dict(self._plugins)
+            return
+
+        raise ConfigError(f"플러그인 없음: {plugin_type}/{plugin_id}")
+
+    def add_recent_file(self, path: Path, *, save: bool = False) -> None:
+        normalized = str(path.expanduser().resolve(strict=False))
+        current = [
+            item
+            for item in self.app_settings.recent_files
+            if item != normalized
+        ]
+        updated = [normalized, *current][: _MAX_RECENT_FILES]
+        self.set("app", "recent_files", value=updated)
+        if save:
+            self.save()
+
+    def remove_recent_file(self, path: Path, *, save: bool = False) -> None:
+        normalized = str(path.expanduser().resolve(strict=False))
+        updated = [item for item in self.app_settings.recent_files if item != normalized]
+        self.set("app", "recent_files", value=updated)
+        if save:
+            self.save()
+
+    def clear_recent_files(self, *, save: bool = False) -> None:
+        self.set("app", "recent_files", value=[])
+        if save:
+            self.save()
+
+    def _refresh_all_typed_settings(self) -> None:
+        self._app_settings = AppSettings.from_dict(self._config.get("app"))
+        self._processing_settings = ProcessingSettings.from_dict(self._config.get("processing"))
+        self._rendering_settings = RenderingSettings.from_dict(self._config.get("rendering"))
+        self._chat_settings = ChatSettings.from_dict(self._config.get("chat"))
+
+    def _refresh_typed_settings_for_section(self, section: str) -> None:
+        if section == "app":
+            self._app_settings = AppSettings.from_dict(self._config.get("app"))
+            return
+        if section == "processing":
+            self._processing_settings = ProcessingSettings.from_dict(self._config.get("processing"))
+            return
+        if section == "rendering":
+            self._rendering_settings = RenderingSettings.from_dict(self._config.get("rendering"))
+            return
+        if section == "chat":
+            self._chat_settings = ChatSettings.from_dict(self._config.get("chat"))
 
     # --- API 키 조회 ---
 
@@ -101,16 +197,36 @@ class ConfigManager:
 
     # --- 플러그인 레지스트리 조회 ---
 
-    def get_plugin_configs(self, plugin_type: str) -> list[dict[str, Any]]:
-        """plugin_type: 'ocr' | 'translators' | 'agents'"""
-        return self._plugins.get(plugin_type, [])
+    @property
+    def app_settings(self) -> AppSettings:
+        return self._app_settings
 
-    def get_plugin_config(self, plugin_type: str, plugin_id: str) -> dict[str, Any] | None:
-        for entry in self.get_plugin_configs(plugin_type):
-            if entry.get("id") == plugin_id:
-                return entry
-        return None
+    @property
+    def processing_settings(self) -> ProcessingSettings:
+        return self._processing_settings
+
+    @property
+    def rendering_settings(self) -> RenderingSettings:
+        return self._rendering_settings
+
+    @property
+    def chat_settings(self) -> ChatSettings:
+        return self._chat_settings
+
+    def validate_config(self) -> list[str]:
+        errors: list[str] = []
+        for plugin_type in ("ocr", "translators", "agents"):
+            if plugin_type not in self._plugin_registry.entries:
+                errors.append(f"플러그인 섹션 누락: {plugin_type}")
+        return errors
+
+    def get_plugin_configs(self, plugin_type: str) -> list[PluginEntry]:
+        """plugin_type: 'ocr' | 'translators' | 'agents'"""
+        return self._plugin_registry.get_plugin_configs(plugin_type)
+
+    def get_plugin_config(self, plugin_type: str, plugin_id: str) -> PluginEntry | None:
+        return self._plugin_registry.get_plugin_config(plugin_type, plugin_id)
 
     def is_plugin_enabled(self, plugin_type: str, plugin_id: str) -> bool:
         entry = self.get_plugin_config(plugin_type, plugin_id)
-        return bool(entry and entry.get("enabled", False))
+        return bool(entry and entry.enabled)

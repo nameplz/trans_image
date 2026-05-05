@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
+from dataclasses import replace
 from typing import Any
 
 import numpy as np
@@ -27,6 +28,8 @@ class EasyOCRPlugin(AbstractOCRPlugin):
         self._reader = None
         self._gpu = self.get_config("gpu", False)
         self._model_dir = self.get_config("model_storage_directory", None)
+        self._download_enabled = self.get_config("download_enabled", True)
+        self._readers: dict[tuple[str, ...], Any] = {}
 
     async def load(self) -> None:
         """EasyOCR Reader 초기화 (모델 다운로드 포함, 수 분 소요 가능)."""
@@ -37,20 +40,13 @@ class EasyOCRPlugin(AbstractOCRPlugin):
 
     def _load_sync(self) -> None:
         try:
-            import easyocr
+            self._reader = self._get_or_create_reader(["en"])
         except ImportError as e:
             raise OCRError("easyocr 미설치: pip install easyocr") from e
 
-        kwargs: dict[str, Any] = {"gpu": self._gpu}
-        if self._model_dir:
-            kwargs["model_storage_directory"] = self._model_dir
-
-        # 다국어 지원을 위해 기본 언어 목록 로드
-        # 실제 detect_regions 호출 시 언어 지정 가능
-        self._reader = easyocr.Reader(["en"], **kwargs)
-
     async def unload(self) -> None:
         self._reader = None
+        self._readers = {}
         self._loaded = False
         logger.info("EasyOCR 언로드 완료")
 
@@ -87,12 +83,52 @@ class EasyOCRPlugin(AbstractOCRPlugin):
     def _readtext_sync(self, image: np.ndarray, languages: list[str]) -> list:
         """동기 EasyOCR 호출."""
         try:
-            # 언어가 변경된 경우 Reader 재생성
-            import easyocr
-            reader = easyocr.Reader(languages, gpu=self._gpu)
+            reader = self._get_or_create_reader(languages)
             return reader.readtext(image, detail=1)
         except Exception as e:
             raise OCRError(f"EasyOCR 처리 실패: {e}") from e
+
+    def _normalize_languages(self, languages: list[str] | None) -> tuple[str, ...]:
+        normalized = tuple(languages or ["en"])
+        return normalized or ("en",)
+
+    def _get_or_create_reader(self, languages: list[str] | None) -> Any:
+        lang_key = self._normalize_languages(languages)
+        reader = self._readers.get(lang_key)
+        if reader is not None:
+            return reader
+
+        reader = self._build_reader(list(lang_key))
+        self._readers[lang_key] = reader
+        if lang_key == ("en",):
+            self._reader = reader
+        return reader
+
+    def _build_reader(self, languages: list[str]) -> Any:
+        try:
+            import easyocr
+        except ImportError as e:
+            raise OCRError("easyocr 미설치: pip install easyocr") from e
+
+        use_gpu = bool(self._gpu)
+        if use_gpu:
+            try:
+                import torch
+            except ImportError:
+                logger.warning("PyTorch 미설치로 EasyOCR GPU를 사용할 수 없어 CPU로 폴백합니다.")
+                use_gpu = False
+            else:
+                if not torch.cuda.is_available():
+                    logger.warning("CUDA 미지원 환경이라 EasyOCR를 CPU 모드로 실행합니다.")
+                    use_gpu = False
+
+        kwargs: dict[str, Any] = {
+            "gpu": use_gpu,
+            "download_enabled": self._download_enabled,
+        }
+        if self._model_dir:
+            kwargs["model_storage_directory"] = self._model_dir
+        return easyocr.Reader(languages, **kwargs)
 
     def _parse_results(self, raw_results: list) -> list[TextRegion]:
         """EasyOCR 결과 → TextRegion 목록 변환.
@@ -136,6 +172,9 @@ class EasyOCRPlugin(AbstractOCRPlugin):
         )
         if crops_results:
             _, text, confidence = crops_results[0]
-            region.raw_text = text.strip()
-            region.confidence = float(confidence)
+            return replace(
+                region,
+                raw_text=text.strip(),
+                confidence=float(confidence),
+            )
         return region

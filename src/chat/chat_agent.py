@@ -23,7 +23,7 @@ Extract intent and parameters from the user message. Respond ONLY with JSON:
   "intent": "translate" | "status" | "cancel" | "help" | "unknown",
   "target_lang": "<BCP-47 code or null>",
   "translator_id": "deepl|gemini|grok|papago|ollama|null",
-  "agent_id": "claude|openai|ollama|grok|null",
+  "agent_id": "claude|openai|ollama|grok|gemini|null",
   "use_agent": true | false | null
 }
 Rules: If user mentions a language name (e.g. Korean, 한국어, Japanese), set target_lang.

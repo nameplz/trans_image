@@ -1,4 +1,4 @@
-"""CLI 모드: python -m trans_image --input img.png --output out.png --target-lang ko"""
+"""CLI entrypoint for ``python -m src``."""
 from __future__ import annotations
 
 import argparse
@@ -6,10 +6,12 @@ import asyncio
 import sys
 from pathlib import Path
 
+from src.utils.env_loader import load_project_env
 
-def parse_args() -> argparse.Namespace:
+
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        prog="trans_image",
+        prog="python -m src",
         description="AI 기반 이미지 텍스트 자동 번역",
     )
     parser.add_argument("--input", "-i", required=True, help="입력 이미지 경로")
@@ -21,7 +23,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--ocr", default="easyocr", help="OCR 플러그인 ID (기본: easyocr)")
     parser.add_argument("--no-agent", action="store_true", help="에이전트 비활성화")
     parser.add_argument("--verbose", "-v", action="store_true", help="상세 로그 출력")
-    return parser.parse_args()
+    return parser.parse_args(argv)
 
 
 async def run_cli(args: argparse.Namespace) -> int:
@@ -33,6 +35,7 @@ async def run_cli(args: argparse.Namespace) -> int:
 
     setup_logging("DEBUG" if args.verbose else "INFO")
 
+    load_project_env()
     config = ConfigManager()
     config.load()
 
@@ -72,10 +75,10 @@ async def run_cli(args: argparse.Namespace) -> int:
         return 1
 
 
-def main() -> None:
-    args = parse_args()
-    sys.exit(asyncio.run(run_cli(args)))
+def main(argv: list[str] | None = None) -> int:
+    args = parse_args(argv)
+    return asyncio.run(run_cli(args))
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

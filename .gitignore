@@ -67,3 +67,15 @@ temp/
 # 번들 폰트 (용량 큰 경우 LFS 사용 권장)
 # assets/fonts/*.ttf
 # assets/fonts/*.otf
+
+# 샘플
+sample/
+trans_test_images/
+trans_test_images_translated/
+
+# Graphify 산출물
+graphify-out/cache/
+graphify-out/memory/
+graphify-out/cost.json
+graphify-out/manifest.json
+graphify-out/.graphify_python

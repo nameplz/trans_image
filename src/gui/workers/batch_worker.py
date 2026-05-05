@@ -28,6 +28,8 @@ class BatchWorker(QThread):
     job_failed = Signal(str, str)            # (image_name, error)
     batch_completed = Signal(object)         # BatchResult
     agent_message = Signal(str)              # 채팅 에이전트 메시지
+    agent_stream_chunk = Signal(str)         # 스트리밍 chunk
+    agent_stream_finished = Signal()         # 현재 스트림 종료
     error_occurred = Signal(str)             # 배치 수준 에러
 
     def __init__(
@@ -86,12 +88,13 @@ class BatchWorker(QThread):
 
         if not images:
             self.agent_message.emit(
-                "지원하는 이미지 파일이 없습니다. (지원: png, jpg, jpeg, webp, bmp, tiff)"
+                "지원하는 이미지 파일이 없습니다. (지원: png, jpg, jpeg, webp, bmp, tiff)\n"
+                "※ 하위 폴더의 이미지는 포함되지 않습니다."
             )
             return
 
         # 시작 메시지
-        self.agent_message.emit(
+        self._emit_stream_text(
             agent.format_start(len(images), resolved.directory_path, resolved.target_lang)
         )
 
@@ -103,7 +106,7 @@ class BatchWorker(QThread):
             if self._cancelled:
                 return False
             self.job_progress.emit(name, current, total)
-            self.agent_message.emit(agent.format_progress(name, current, total))
+            self._emit_stream_text(agent.format_progress(name, current, total))
             return True
 
         result = await processor.run_batch(
@@ -117,5 +120,11 @@ class BatchWorker(QThread):
             return
 
         # 완료 요약
-        self.agent_message.emit(agent.format_result(result))
+        self._emit_stream_text(agent.format_result(result))
         self.batch_completed.emit(result)
+
+    def _emit_stream_text(self, message: str) -> None:
+        chunk_size = 18
+        for start in range(0, len(message), chunk_size):
+            self.agent_stream_chunk.emit(message[start:start + chunk_size])
+        self.agent_stream_finished.emit()

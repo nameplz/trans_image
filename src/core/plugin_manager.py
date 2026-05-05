@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import importlib
+import inspect
+import asyncio
 from typing import Any, TypeVar
 
 from src.core.config_manager import ConfigManager
@@ -64,11 +66,11 @@ class PluginManager:
         entry = self._config.get_plugin_config(plugin_type, plugin_id)
         if not entry:
             raise PluginNotFoundError(f"플러그인 없음: {plugin_type}/{plugin_id}")
-        if not entry.get("enabled", False):
+        if not self._is_enabled(entry):
             raise PluginNotFoundError(f"플러그인 비활성화: {plugin_type}/{plugin_id}")
 
-        cls = self._load_class(entry["module"], entry["class"])
-        plugin_config = entry.get("config", {})
+        cls = self._load_class(self._entry_module(entry), self._entry_class(entry))
+        plugin_config = self._entry_config(entry)
 
         # API 키 환경변수 해석
         resolved_config = self._resolve_config(plugin_config)
@@ -90,6 +92,18 @@ class PluginManager:
                 resolved[k] = v
         return resolved
 
+    def _is_enabled(self, entry: Any) -> bool:
+        return bool(entry.enabled if hasattr(entry, "enabled") else entry.get("enabled", False))
+
+    def _entry_module(self, entry: Any) -> str:
+        return entry.module if hasattr(entry, "module") else entry["module"]
+
+    def _entry_class(self, entry: Any) -> str:
+        return entry.class_name if hasattr(entry, "class_name") else entry["class"]
+
+    def _entry_config(self, entry: Any) -> dict[str, Any]:
+        return entry.config if hasattr(entry, "config") else entry.get("config", {})
+
     def get_ocr_plugin(self, plugin_id: str) -> AbstractOCRPlugin:
         plugin = self.get_plugin("ocr", plugin_id)
         assert isinstance(plugin, AbstractOCRPlugin)
@@ -108,10 +122,29 @@ class PluginManager:
     def list_available(self, plugin_type: str) -> list[str]:
         """활성화된 플러그인 ID 목록 반환."""
         return [
-            e["id"]
+            e.plugin_id if hasattr(e, "plugin_id") else e["id"]
             for e in self._config.get_plugin_configs(plugin_type)
-            if e.get("enabled", False)
+            if self._is_enabled(e)
         ]
+
+    def invalidate_plugin(self, plugin_type: str, plugin_id: str) -> None:
+        """특정 플러그인 캐시 제거. 로드된 경우 unload를 시도한다."""
+        key = self._cache_key(plugin_type, plugin_id)
+        plugin = self._instances.pop(key, None)
+        if plugin is None or not plugin.is_loaded:
+            return
+
+        try:
+            result = plugin.unload()
+            if inspect.isawaitable(result):
+                try:
+                    loop = asyncio.get_running_loop()
+                except RuntimeError:
+                    asyncio.run(result)
+                else:
+                    loop.create_task(result)
+        except Exception as e:
+            logger.warning("플러그인 무효화 중 unload 실패 (%s): %s", key, e)
 
     async def unload_all(self) -> None:
         """모든 로드된 플러그인 해제."""

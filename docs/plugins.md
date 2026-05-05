@@ -172,6 +172,7 @@ async def stream_analysis(self, prompt: str) -> AsyncIterator[str]:
 |----|------|------|
 | `claude` | `agents/claude_agent.py` | claude-sonnet-4-6 |
 | `openai` | `agents/openai_agent.py` | gpt-4o |
+| `gemini` | `agents/gemini_agent.py` | gemini-3.1-flash-lite-preview |
 | `ollama` | `agents/ollama_agent.py` | 로컬 설정 가능 |
 
 ### 새 번역 보조 에이전트 플러그인 추가

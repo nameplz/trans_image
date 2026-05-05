@@ -58,15 +58,25 @@ uv sync --extra dev
 # GUI 모드
 uv run python main.py
 
+# 설치된 프로젝트 스크립트
+uv run trans-image
+
 # CLI 모드
-uv run python -m trans_image --input image.png --output result.png \
+uv run python -m src --input image.png --output result.png \
   --target-lang ko --translator deepl --agent claude
 ```
+
+## 실행/설정 기준
+
+- `설정` 다이얼로그에서 저장한 기본 언어, 플러그인, `use_agent`, 테마는 다음 실행에도 유지됩니다.
+- 단일 이미지 처리는 동시에 최대 2개까지만 실행됩니다.
+- 최대 동시 실행 수에 도달하면 새 단일 이미지 작업은 즉시 거절되고 경고 메시지가 표시됩니다.
 
 ---
 
 ## API 키 설정
 
+기본 설정 파일(`config/default_config.yaml`)에는 실제 API 키를 넣지 않습니다.
 `.env.example`을 복사해 `.env`를 만들고 키를 채우세요.
 
 ```bash
@@ -83,7 +93,12 @@ PAPAGO_CLIENT_ID=...
 PAPAGO_CLIENT_SECRET=...
 ```
 
+앱 실행 시 프로젝트 루트의 `.env`를 자동 로드합니다.
+이미 셸에 export된 환경변수가 있으면 `.env`보다 우선합니다.
+둘 다 없을 때만 `config/default_config.yaml`의 `api_keys`가 fallback으로 사용됩니다.
+
 > `.env`는 `.gitignore`에 포함되어 있어 절대 커밋되지 않습니다.
+> 이미 소스에 노출된 키가 있었다면 즉시 폐기하고 새 키로 교체하세요.
 
 ---
 

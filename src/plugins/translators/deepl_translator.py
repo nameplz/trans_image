@@ -24,6 +24,13 @@ _DEEPL_TARGET_LANGS = [
     "TR", "UK", "ZH",
 ]
 
+_DEEPL_SOURCE_LANGS = {
+    "AR", "BG", "CS", "DA", "DE", "EL", "EN", "ES", "ET",
+    "FI", "FR", "HU", "ID", "IT", "JA", "KO", "LT", "LV",
+    "NB", "NL", "PL", "PT", "RO", "RU", "SK", "SL", "SV",
+    "TR", "UK", "ZH",
+}
+
 # BCP-47 → DeepL 코드 매핑
 _LANG_MAP: dict[str, str] = {
     "ko": "KO",
@@ -39,6 +46,11 @@ _LANG_MAP: dict[str, str] = {
     "nl": "NL",
     "pl": "PL",
     "tr": "TR",
+}
+
+_SOURCE_LANG_MAP: dict[str, str] = {
+    "en": "EN",
+    "pt": "PT",
 }
 
 
@@ -94,6 +106,23 @@ class DeepLTranslatorPlugin(AbstractTranslatorPlugin):
     def _to_deepl_lang(self, code: str) -> str:
         return _LANG_MAP.get(code.lower(), code.upper())
 
+    def _to_deepl_source_lang(self, code: str) -> str | None:
+        normalized = code.strip()
+        if not normalized:
+            return None
+        if normalized.lower() in {"auto", "und"}:
+            return None
+
+        deepl_code = _SOURCE_LANG_MAP.get(normalized.lower(), self._to_deepl_lang(normalized))
+        if deepl_code in _DEEPL_SOURCE_LANGS:
+            return deepl_code
+
+        logger.warning(
+            "지원되지 않는 DeepL source_lang '%s' 감지됨. auto-detect로 폴백합니다.",
+            code,
+        )
+        return None
+
     async def translate(
         self,
         text: str,
@@ -106,7 +135,7 @@ class DeepLTranslatorPlugin(AbstractTranslatorPlugin):
 
         t0 = time.time()
         target_code = self._to_deepl_lang(target_lang)
-        source_code = None if source_lang == "auto" else self._to_deepl_lang(source_lang)
+        source_code = self._to_deepl_source_lang(source_lang)
 
         try:
             result = self._translator.translate_text(
@@ -140,7 +169,7 @@ class DeepLTranslatorPlugin(AbstractTranslatorPlugin):
 
         texts = [r.raw_text for r in regions]
         target_code = self._to_deepl_lang(target_lang)
-        source_code = None if source_lang == "auto" else self._to_deepl_lang(source_lang)
+        source_code = self._to_deepl_source_lang(source_lang)
 
         t0 = time.time()
         try:

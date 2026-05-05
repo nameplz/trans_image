@@ -7,8 +7,6 @@ from __future__ import annotations
 import os
 from pathlib import Path
 from unittest.mock import patch
-
-import pytest
 import yaml
 
 from src.core.config_manager import ConfigManager
@@ -197,3 +195,192 @@ class TestGetApiKeyDefensiveAgainstDict:
         assert len(caplog.records) >= 1
         warning_messages = [r.message for r in caplog.records if r.levelno >= logging.WARNING]
         assert any("DEEPL_API_KEY" in msg or "deepl" in msg.lower() for msg in warning_messages)
+
+
+class TestPluginRegistryDefaults:
+    """프로젝트 기본 plugins.yaml 회귀 검증."""
+
+    def test_default_plugins_yaml_uses_flash_lite_preview_for_gemini_agent(self):
+        mgr = ConfigManager()
+        mgr.load()
+
+        entry = mgr.get_plugin_config("agents", "gemini")
+
+        assert entry is not None
+        assert entry.config["model"] == "gemini-3.1-flash-lite-preview"
+
+
+class TestPluginConfigPersistence:
+    def test_set_plugin_config_value_updates_registry_and_persists_after_reload(self, tmp_path):
+        cfg_path = _write_yaml(tmp_path, {})
+        plugins_path = tmp_path / "plugins.yaml"
+        plugins_path.write_text(
+            yaml.dump(
+                {
+                    "ocr": [
+                        {
+                            "id": "easyocr",
+                            "enabled": True,
+                            "module": "src.plugins.ocr.easyocr_plugin",
+                            "class": "EasyOCRPlugin",
+                            "config": {"gpu": False, "download_enabled": True},
+                        }
+                    ]
+                },
+                allow_unicode=True,
+            ),
+            encoding="utf-8",
+        )
+
+        mgr = ConfigManager(config_path=cfg_path, plugins_path=plugins_path)
+        mgr.load()
+
+        mgr.set_plugin_config_value("ocr", "easyocr", "gpu", value=True)
+
+        updated_entry = mgr.get_plugin_config("ocr", "easyocr")
+        assert updated_entry is not None
+        assert updated_entry.config["gpu"] is True
+
+        mgr.save_plugins()
+
+        reloaded = ConfigManager(config_path=cfg_path, plugins_path=plugins_path)
+        reloaded.load()
+        reloaded_entry = reloaded.get_plugin_config("ocr", "easyocr")
+        assert reloaded_entry is not None
+        assert reloaded_entry.config["gpu"] is True
+
+
+class TestTypedSettingsSynchronization:
+    """raw config와 typed settings가 같은 값을 보도록 유지한다."""
+
+    def test_set_updates_processing_typed_settings_and_raw_config(self, tmp_path):
+        cfg_path = _write_yaml(
+            tmp_path,
+            {
+                "processing": {
+                    "default_target_lang": "ko",
+                    "default_ocr_plugin": "easyocr",
+                    "default_translator_plugin": "deepl",
+                    "default_agent_plugin": "claude",
+                    "use_agent": True,
+                }
+            },
+        )
+        mgr = ConfigManager(config_path=cfg_path, plugins_path=_plugins_yaml(tmp_path))
+        mgr.load()
+
+        mgr.set("processing", "default_target_lang", value="ja")
+        mgr.set("processing", "default_translator_plugin", value="gemini")
+        mgr.set("processing", "use_agent", value=False)
+
+        assert mgr.get("processing", "default_target_lang") == "ja"
+        assert mgr.get("processing", "default_translator_plugin") == "gemini"
+        assert mgr.get("processing", "use_agent") is False
+        assert mgr.processing_settings.default_target_lang == "ja"
+        assert mgr.processing_settings.default_translator_plugin == "gemini"
+        assert mgr.processing_settings.use_agent is False
+
+    def test_set_updates_app_typed_settings_and_persists_after_reload(self, tmp_path):
+        cfg_path = _write_yaml(
+            tmp_path,
+            {
+                "app": {
+                    "theme": "dark",
+                    "language": "ko",
+                }
+            },
+        )
+        mgr = ConfigManager(config_path=cfg_path, plugins_path=_plugins_yaml(tmp_path))
+        mgr.load()
+
+        mgr.set("app", "theme", value="light")
+        mgr.set("app", "language", value="en")
+        mgr.save()
+
+        reloaded = ConfigManager(config_path=cfg_path, plugins_path=_plugins_yaml(tmp_path))
+        reloaded.load()
+
+        assert reloaded.get("app", "theme") == "light"
+        assert reloaded.get("app", "language") == "en"
+        assert reloaded.app_settings.theme == "light"
+        assert reloaded.app_settings.language == "en"
+
+
+class TestRecentFiles:
+    def test_add_recent_file_inserts_most_recent_first(self, tmp_path):
+        cfg_path = _write_yaml(tmp_path, {"app": {"recent_files": []}})
+        mgr = ConfigManager(config_path=cfg_path, plugins_path=_plugins_yaml(tmp_path))
+        mgr.load()
+
+        first = tmp_path / "a.png"
+        second = tmp_path / "folder"
+        mgr.add_recent_file(first)
+        mgr.add_recent_file(second)
+
+        assert mgr.app_settings.recent_files == (
+            str(second.resolve()),
+            str(first.resolve()),
+        )
+
+    def test_readding_recent_file_moves_it_to_front(self, tmp_path):
+        cfg_path = _write_yaml(tmp_path, {"app": {"recent_files": []}})
+        mgr = ConfigManager(config_path=cfg_path, plugins_path=_plugins_yaml(tmp_path))
+        mgr.load()
+
+        first = tmp_path / "a.png"
+        second = tmp_path / "b.png"
+        mgr.add_recent_file(first)
+        mgr.add_recent_file(second)
+        mgr.add_recent_file(first)
+
+        assert mgr.app_settings.recent_files == (
+            str(first.resolve()),
+            str(second.resolve()),
+        )
+
+    def test_recent_files_capped_at_ten(self, tmp_path):
+        cfg_path = _write_yaml(tmp_path, {"app": {"recent_files": []}})
+        mgr = ConfigManager(config_path=cfg_path, plugins_path=_plugins_yaml(tmp_path))
+        mgr.load()
+
+        for index in range(12):
+            mgr.add_recent_file(tmp_path / f"{index}.png")
+
+        assert len(mgr.app_settings.recent_files) == 10
+        assert mgr.app_settings.recent_files[0] == str((tmp_path / "11.png").resolve())
+        assert mgr.app_settings.recent_files[-1] == str((tmp_path / "2.png").resolve())
+
+    def test_remove_recent_file_updates_raw_and_typed_settings(self, tmp_path):
+        cfg_path = _write_yaml(tmp_path, {"app": {"recent_files": []}})
+        mgr = ConfigManager(config_path=cfg_path, plugins_path=_plugins_yaml(tmp_path))
+        mgr.load()
+        target = tmp_path / "a.png"
+        mgr.add_recent_file(target)
+
+        mgr.remove_recent_file(target)
+
+        assert mgr.app_settings.recent_files == ()
+        assert mgr.get("app", "recent_files") == []
+
+    def test_clear_recent_files_updates_raw_and_typed_settings(self, tmp_path):
+        cfg_path = _write_yaml(tmp_path, {"app": {"recent_files": ["/tmp/a.png"]}})
+        mgr = ConfigManager(config_path=cfg_path, plugins_path=_plugins_yaml(tmp_path))
+        mgr.load()
+
+        mgr.clear_recent_files()
+
+        assert mgr.app_settings.recent_files == ()
+        assert mgr.get("app", "recent_files") == []
+
+    def test_recent_files_persist_after_save_and_reload(self, tmp_path):
+        cfg_path = _write_yaml(tmp_path, {"app": {"recent_files": []}})
+        mgr = ConfigManager(config_path=cfg_path, plugins_path=_plugins_yaml(tmp_path))
+        mgr.load()
+        folder = tmp_path / "images"
+        mgr.add_recent_file(folder)
+        mgr.save()
+
+        reloaded = ConfigManager(config_path=cfg_path, plugins_path=_plugins_yaml(tmp_path))
+        reloaded.load()
+
+        assert reloaded.app_settings.recent_files == (str(folder.resolve()),)

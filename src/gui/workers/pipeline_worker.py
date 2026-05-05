@@ -7,6 +7,7 @@ from typing import Any
 
 from PySide6.QtCore import QThread, Signal
 
+from src.core.exceptions import ConcurrencyLimitError
 from src.core.pipeline import Pipeline
 from src.models.processing_job import ProcessingJob
 from src.utils.logger import get_logger
@@ -78,6 +79,106 @@ class PipelineWorker(QThread):
         logger.info("취소 요청: %s", self._job.job_id)
 
 
+class RegionReprocessWorker(QThread):
+    """단일 영역 재처리를 QThread 내에서 실행.
+
+    Pipeline.reprocess_region()을 비동기로 실행하고 결과를 Signal로 전달한다.
+    """
+
+    progress_updated = Signal(str, float, str)   # job_id, progress, message
+    region_done = Signal(str, str)               # job_id, region_id
+    region_failed = Signal(str, str, str)        # job_id, region_id, error_message
+
+    def __init__(
+        self,
+        pipeline: Pipeline,
+        job,
+        region_id: str,
+        parent=None,
+    ) -> None:
+        super().__init__(parent)
+        self._pipeline = pipeline
+        self._job = job
+        self._region_id = region_id
+
+    def run(self) -> None:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            loop.run_until_complete(self._run())
+        except Exception as e:
+            logger.exception("RegionReprocessWorker 오류: %s", e)
+        finally:
+            loop.close()
+
+    async def _run(self) -> None:
+        try:
+            await self._pipeline.reprocess_region(
+                self._job,
+                self._region_id,
+                progress_cb=self._on_progress,
+            )
+            self.region_done.emit(self._job.job_id, self._region_id)
+        except Exception as e:
+            error = traceback.format_exc()
+            logger.error("단일 영역 재처리 실패: %s", error)
+            self.region_failed.emit(self._job.job_id, self._region_id, str(e))
+
+    def _on_progress(self, job, message: str) -> None:
+        self.progress_updated.emit(job.job_id, job.progress, message)
+
+
+class RegionPreviewWorker(QThread):
+    """영역 번역 draft 프리뷰를 QThread에서 렌더링한다."""
+
+    preview_ready = Signal(str, str, int, object)   # job_id, region_id, request_id, image
+    preview_failed = Signal(str, str, int, str)     # job_id, region_id, request_id, error
+
+    def __init__(
+        self,
+        pipeline: Pipeline,
+        job: ProcessingJob,
+        region_id: str,
+        draft_text: str,
+        request_id: int,
+        parent=None,
+    ) -> None:
+        super().__init__(parent)
+        self._pipeline = pipeline
+        self._job = job
+        self._region_id = region_id
+        self._draft_text = draft_text
+        self._request_id = request_id
+
+    def run(self) -> None:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            preview = loop.run_until_complete(
+                self._pipeline.preview_region_translation(
+                    self._job,
+                    self._region_id,
+                    self._draft_text,
+                )
+            )
+            self.preview_ready.emit(
+                self._job.job_id,
+                self._region_id,
+                self._request_id,
+                preview,
+            )
+        except Exception as e:
+            logger.error("영역 프리뷰 실패 [%s]: %s", self._region_id[:8], e)
+            self.preview_failed.emit(
+                self._job.job_id,
+                self._region_id,
+                self._request_id,
+                str(e),
+            )
+        finally:
+            loop.close()
+
+
 class WorkerPool:
     """여러 PipelineWorker를 관리하는 풀."""
 
@@ -88,6 +189,10 @@ class WorkerPool:
 
     def submit(self, job: ProcessingJob, parent=None) -> PipelineWorker:
         """작업을 새 워커에 제출."""
+        if self.is_at_capacity:
+            raise ConcurrencyLimitError(
+                f"동시 실행 제한({self._max})을 초과했습니다. 현재 실행 중인 작업이 끝난 후 다시 시도해 주세요."
+            )
         worker = PipelineWorker(self._pipeline, job, parent=parent)
         self._workers[job.job_id] = worker
         worker.finished.connect(lambda: self._workers.pop(job.job_id, None))

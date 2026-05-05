@@ -88,3 +88,7 @@ class ConfigError(TransImageError):
 
 class PipelineError(TransImageError):
     """파이프라인 실행 중 복구 불가능한 오류."""
+
+
+class ConcurrencyLimitError(TransImageError):
+    """동시 실행 제한을 초과함."""

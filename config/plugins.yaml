@@ -80,6 +80,14 @@ agents:
       model: "gpt-4o"
       max_tokens: 4096
 
+  - id: gemini
+    enabled: true
+    module: "src.plugins.agents.gemini_agent"
+    class: "GeminiAgentPlugin"
+    config:
+      api_key_env: "GOOGLE_API_KEY"
+      model: "gemini-3.1-flash-lite-preview"
+
   - id: ollama
     enabled: true
     module: "src.plugins.agents.ollama_agent"

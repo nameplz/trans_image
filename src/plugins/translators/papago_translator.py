@@ -139,6 +139,6 @@ class PapagoTranslatorPlugin(AbstractTranslatorPlugin):
                     error=str(res),
                 ))
             else:
-                res.region_id = region.region_id
-                results.append(res)
+                import dataclasses
+                results.append(dataclasses.replace(res, region_id=region.region_id))
         return results

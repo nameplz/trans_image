@@ -41,11 +41,13 @@ class BatchProcessor:
     def scan_directory(self, path: Path) -> list[Path]:
         """디렉토리에서 지원하는 이미지 파일 목록을 알파벳 순으로 반환.
 
+        현재 디렉토리(depth=1)의 파일만 스캔합니다. 하위 폴더는 포함되지 않습니다.
+
         Args:
             path: 스캔할 디렉토리 경로
 
         Returns:
-            정렬된 이미지 파일 경로 목록
+            정렬된 이미지 파일 경로 목록 (하위 폴더 미포함)
 
         Raises:
             FileNotFoundError: 경로가 존재하지 않을 때
@@ -83,6 +85,10 @@ class BatchProcessor:
         jobs = []
         for img_path in image_paths:
             extra: dict = {}
+            if parsed.source_lang is not None:
+                extra["source_lang"] = parsed.source_lang
+            if parsed.ocr_plugin_id is not None:
+                extra["ocr_plugin_id"] = parsed.ocr_plugin_id
             if parsed.translator_id is not None:
                 extra["translator_plugin_id"] = parsed.translator_id
             if parsed.agent_id is not None:

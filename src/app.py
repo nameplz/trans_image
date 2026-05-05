@@ -1,8 +1,7 @@
-"""QApplication 래퍼 — 앱 초기화."""
+"""Public GUI entrypoints and QApplication wiring."""
 from __future__ import annotations
 
 import sys
-from pathlib import Path
 
 from PySide6.QtWidgets import QApplication
 
@@ -11,11 +10,11 @@ from src.core.pipeline import Pipeline
 from src.core.plugin_manager import PluginManager
 from src.core.session import Session
 from src.gui.main_window import MainWindow
+from src.gui.theme import apply_theme
+from src.utils.env_loader import load_project_env
 from src.utils.logger import get_logger, setup_logging
 
 logger = get_logger("trans_image.app")
-
-_STYLES_PATH = Path(__file__).parent.parent / "assets" / "styles" / "main.qss"
 
 
 def create_app(argv: list[str] | None = None) -> tuple[QApplication, MainWindow]:
@@ -24,14 +23,13 @@ def create_app(argv: list[str] | None = None) -> tuple[QApplication, MainWindow]
     app.setApplicationName("trans_image")
     app.setApplicationVersion("0.1.0")
 
-    # QSS 스타일 적용
-    if _STYLES_PATH.exists():
-        with open(_STYLES_PATH, encoding="utf-8") as f:
-            app.setStyleSheet(f.read())
-
-    # 설정 로드
+    # 설정 로드 전에 프로젝트 .env를 주입한다.
+    load_project_env()
     config = ConfigManager()
     config.load()
+
+    # QSS 스타일 적용
+    apply_theme(app, config.get("app", "theme", default="dark"))
 
     # 로깅 설정
     setup_logging(
@@ -51,3 +49,8 @@ def run_gui(argv: list[str] | None = None) -> int:
     app, window = create_app(argv)
     window.show()
     return app.exec()
+
+
+def main(argv: list[str] | None = None) -> int:
+    """Public GUI entrypoint used by the launcher script."""
+    return run_gui(argv)

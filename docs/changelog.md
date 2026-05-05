@@ -1,5 +1,22 @@
 # Changelog
 
+## 2026-05-05: 프로젝트 정리 및 문서 정본 통합
+
+- 루트 문서 참조를 `docs/` 정본 기준으로 정리
+  - `AGENTS.md`, `CLAUDE.md`의 파이프라인 참조를 `docs/pipeline.md`로 통일
+- 중복/임시 문서 정리
+  - 루트 `plugins.md`, `pipeline.md`, `changelog.md`, `fix.md` 제거
+  - 변경 이력은 `docs/changelog.md` 하나로 통합
+- 로컬 환경 기본값 정리
+  - `config/default_config.yaml`의 `app.recent_files` 절대경로 기본값 제거
+- 로컬 작업 산출물 정리
+  - `.claude/worktrees/` 작업 사본 제거
+  - `.codex/`, `.claude/worktrees/`를 `.gitignore`에 추가
+  - `trans_test_images_translated/`와 캐시/로그/egg-info 등 재생성 가능한 로컬 산출물 정리
+- 유지
+  - `trans_test_images/`는 테스트용 입력 자산으로 유지
+  - `graphify-out/` 전체는 사용자 요청에 따라 유지
+
 ## 2026-04-28: Wave A 아키텍처 안정화 마감
 
 - **A1 엔트리포인트/패키징 정합성**
@@ -32,6 +49,41 @@
   - 부분 회귀: 엔트리포인트/설정/UI/controller 관련 테스트 `91 passed`
   - 전체 회귀: `uv run pytest --cov=src --cov-report=term-missing` → `421 passed`, 총 커버리지 `82%`
   - `graphify update .` 실행으로 지식 그래프 최신화
+
+## 2026-04-25: 설정 및 문서 정리
+
+- `config/default_config.yaml` — API 설정 기본값과 환경변수 안내 정리
+- `setup.md`, `README.md` — 환경변수/`.env` 기반 API 키 설정만 안내하도록 정리
+- 기본 설정 파일에는 실제 시크릿을 저장하지 않는 정책으로 정리
+
+## 2026-04-25: Gemini 번역 보조 에이전트 추가
+
+- `src/plugins/agents/gemini_agent.py` — Google Gemini 기반 번역 보조 에이전트 플러그인 추가
+  - OCR 결과 분석
+  - 번역 컨텍스트 생성
+  - 번역 검증
+  - GUI용 스트리밍 분석
+- `config/plugins.yaml` — `agents.gemini` 등록 (`GOOGLE_API_KEY`, `gemini-1.5-flash`)
+- `src/chat/message_parser.py` — `gemini 에이전트` 자연어 파싱 지원
+- `src/chat/chat_agent.py` — LLM intent schema의 `agent_id` 허용 목록에 `gemini` 추가
+- `docs/plugins.md` — 지원 에이전트 목록에 Gemini 추가
+- `tests/unit/test_agent_plugins.py`, `tests/unit/test_message_parser.py` 테스트 추가
+- `uv run pytest tests/unit/test_agent_plugins.py tests/unit/test_message_parser.py` → `74 passed`
+
+## 2026-04-25: Wave 4 완료 — 통합 테스트 보강 + 커버리지 81%
+
+- `tests/integration/test_pipeline_e2e.py` — 더미 이미지와 mock 플러그인 기반 파이프라인 통합 테스트 3개 추가
+- 커버리지 보강 단위 테스트 추가
+  - `tests/unit/test_pipeline_worker.py`
+  - `tests/unit/test_app_entrypoints.py`
+  - `tests/unit/test_job_queue_panel.py`
+  - `tests/unit/test_settings_dialog.py`
+  - `tests/unit/test_theme.py`
+  - `tests/unit/test_logger_utils.py`
+- `TODO.md` — `[I] 항목 2 Phase D: 통합 테스트 보강` 완료 처리
+- `graphify-out/` — `graphify update .` 실행으로 코드 그래프 갱신
+- `uv run pytest tests/integration/test_pipeline_e2e.py tests/unit/test_pipeline_worker.py tests/unit/test_app_entrypoints.py tests/unit/test_job_queue_panel.py tests/unit/test_settings_dialog.py tests/unit/test_theme.py tests/unit/test_logger_utils.py` → `33 passed`
+- `uv run pytest --cov=src --cov-report=term-missing` → `385 passed`, 총 커버리지 `81%`
 
 ## 2026-04-25: [H] Phase 7 고급 기능 완성
 
@@ -94,6 +146,37 @@
 - **5-4** `src/gui/main_window.py`: `_on_job_done()`, `_on_job_failed()`에 `QTimer.singleShot(3000, self._do_reset_progress_if_idle)` 추가. `_do_reset_progress_if_idle()` 메서드 추가 (진행 중 job 가드)
 - 신규 테스트 41개: `tests/unit/test_main_window_phase5.py`, `tests/unit/test_region_overlay_phase5.py`, `tests/unit/test_pipeline_reprocess.py`
 - 전체: 303개 통과 (기존 3개 실패는 Windows 경로 이슈, 무관)
+
+## 2026-04-01: Wave 1 완료 — 버그 수정 + 폰트 번들 + 단위 테스트 204개
+
+- `src/models/processing_job.py` — `ProcessingJob.status_label` `@property` 추가
+- `src/models/text_region.py` — `TextStyle` Enum → dataclass 교체
+- `src/services/rendering_service.py` — `bg_color is not None` 가드 추가
+- `src/plugins/translators/gemini_translator.py`, `grok_translator.py`, `papago_translator.py` — `dataclasses.replace()` 패턴으로 교체
+- `scripts/download_fonts.py`, `scripts/download_fonts.sh` 추가
+- `assets/fonts/NotoSansCJKkr-Regular.otf`, `assets/fonts/NotoSansCJKkr-Bold.otf` 번들 추가
+- `tests/conftest.py`, `tests/unit/test_session.py`, `tests/unit/test_image_utils.py`, `tests/unit/test_font_service.py`, `tests/unit/test_inpainting_service.py`, `tests/unit/test_rendering_service.py`, `tests/unit/test_plugin_manager.py`, `tests/unit/test_pipeline.py`, `tests/unit/test_translator_plugins.py`, `tests/unit/test_ocr_plugins.py`, `tests/unit/test_agent_plugins.py` 추가
+- `pytest tests/unit/ --ignore=tests/unit/test_message_parser.py` → 신규 테스트 `204개 통과`
+
+## 2026-03-30: 구현 계획 수립 및 TODO.md 재구성
+
+- `TODO.md` — 기존 대기 항목을 세부 작업으로 분해하고 Wave 1~5 병렬 실행 로드맵 추가
+- 잠재 버그 후보를 다음 세션 작업 항목으로 정리
+
+## 2026-03-20: 채팅 기반 배치 이미지 번역 인터페이스 구현
+
+- `src/chat/conversation.py`, `src/chat/message_parser.py`, `src/chat/batch_processor.py`, `src/chat/chat_agent.py` 추가
+- `src/gui/widgets/chat_panel.py`, `src/gui/workers/batch_worker.py` 추가
+- `src/gui/main_window.py` — ChatPanel 우측 패널 통합, `_on_chat_message` / `_cancel_batch` 슬롯 추가
+- `config/default_config.yaml` — `chat` 섹션 추가
+- `pyproject.toml` — build backend를 `setuptools.build_meta`로 정리
+- `tests/unit/test_message_parser.py`, `tests/unit/test_batch_processor.py` 추가
+- `TODO.md` — 세션 간 작업 연속성 관리 파일 추가
+
+## 2026-03-15: 프로젝트 초기 구조 구현 (Phase 1~4)
+
+- 데이터 모델, 플러그인 ABC, OCR/번역/에이전트 플러그인, 서비스 계층, `Pipeline`, `PluginManager`, `ConfigManager`, `Session`, GUI, 진입점 기본 구조 구현
+- 문서 초안으로 `docs/pipeline.md`, `docs/plugins.md`, `docs/chat_interface.md` 추가
 
 ## 2026-03-26: [M-1][M-2][M-3][Bug] 대기 중 이슈 병렬 처리
 

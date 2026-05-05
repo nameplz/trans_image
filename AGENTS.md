@@ -15,7 +15,7 @@
 - 플러그인 개발 가이드: `plugin-dev-guide.md`
 - 지원 플러그인 전체 목록: `docs/plugins.md`
 - 핵심 데이터 구조 상세: `data-models.md`
-- 파이프라인 흐름 상세: `pipeline.md`
+- 파이프라인 흐름 상세: `docs/pipeline.md`
 - 코딩 컨벤션: `conventions.md`
 - 환경 설정 & 실행: `setup.md`
 - 변경 이력: `docs/changelog.md`

@@ -34,6 +34,8 @@ config/local_*.yaml
 .idea/
 *.swp
 *.swo
+.codex/
+.claude/worktrees/
 
 # OS
 .DS_Store

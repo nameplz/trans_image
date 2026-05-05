@@ -4577,81 +4577,81 @@
       "file_type": "rationale",
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L174",
-      "id": "test_agent_plugins_rationale_174",
       "community": 7,
-      "norm_label": "analyze_ocr_results \u2192 region \u1106\u1169\u11a8\u1105\u1169\u11a8 \u1107\u1161\u11ab\u1112\u116a\u11ab."
+      "norm_label": "analyze_ocr_results \u2192 region \u1106\u1169\u11a8\u1105\u1169\u11a8 \u1107\u1161\u11ab\u1112\u116a\u11ab.",
+      "id": "test_agent_plugins_rationale_174"
     },
     {
       "label": "generate_translation_context \u2192 dict \ubc18\ud658.",
       "file_type": "rationale",
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L192",
-      "id": "test_agent_plugins_rationale_192",
       "community": 7,
-      "norm_label": "generate_translation_context \u2192 dict \u1107\u1161\u11ab\u1112\u116a\u11ab."
+      "norm_label": "generate_translation_context \u2192 dict \u1107\u1161\u11ab\u1112\u116a\u11ab.",
+      "id": "test_agent_plugins_rationale_192"
     },
     {
       "label": "validate_translations \u2192 needs_review \ud50c\ub798\uadf8 \uc5c5\ub370\uc774\ud2b8.",
       "file_type": "rationale",
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L208",
-      "id": "test_agent_plugins_rationale_208",
       "community": 7,
-      "norm_label": "validate_translations \u2192 needs_review \u1111\u1173\u11af\u1105\u1162\u1100\u1173 \u110b\u1165\u11b8\u1103\u1166\u110b\u1175\u1110\u1173."
+      "norm_label": "validate_translations \u2192 needs_review \u1111\u1173\u11af\u1105\u1162\u1100\u1173 \u110b\u1165\u11b8\u1103\u1166\u110b\u1175\u1110\u1173.",
+      "id": "test_agent_plugins_rationale_208"
     },
     {
       "label": "stream_analysis \u2192 \ubaa8\ub378 \uc751\ub2f5 \ud14d\uc2a4\ud2b8\ub97c \uccad\ud06c\ub85c \ubd84\ud560 yield.",
       "file_type": "rationale",
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L238",
-      "id": "test_agent_plugins_rationale_238",
       "community": 7,
-      "norm_label": "stream_analysis \u2192 \u1106\u1169\u1103\u1166\u11af \u110b\u1173\u11bc\u1103\u1161\u11b8 \u1110\u1166\u11a8\u1109\u1173\u1110\u1173\u1105\u1173\u11af \u110e\u1165\u11bc\u110f\u1173\u1105\u1169 \u1107\u116e\u11ab\u1112\u1161\u11af yield."
+      "norm_label": "stream_analysis \u2192 \u1106\u1169\u1103\u1166\u11af \u110b\u1173\u11bc\u1103\u1161\u11b8 \u1110\u1166\u11a8\u1109\u1173\u1110\u1173\u1105\u1173\u11af \u110e\u1165\u11bc\u110f\u1173\u1105\u1169 \u1107\u116e\u11ab\u1112\u1161\u11af yield.",
+      "id": "test_agent_plugins_rationale_238"
     },
     {
       "label": "API \ud0a4 \uc5c6\uc74c \u2192 validate_config \uc624\ub958 \ubc18\ud658.",
       "file_type": "rationale",
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L249",
-      "id": "test_agent_plugins_rationale_249",
       "community": 7,
-      "norm_label": "api \u110f\u1175 \u110b\u1165\u11b9\u110b\u1173\u11b7 \u2192 validate_config \u110b\u1169\u1105\u1172 \u1107\u1161\u11ab\u1112\u116a\u11ab."
+      "norm_label": "api \u110f\u1175 \u110b\u1165\u11b9\u110b\u1173\u11b7 \u2192 validate_config \u110b\u1169\u1105\u1172 \u1107\u1161\u11ab\u1112\u116a\u11ab.",
+      "id": "test_agent_plugins_rationale_249"
     },
     {
       "label": "analyze_ocr_results \u2192 region \ubaa9\ub85d \ubc18\ud658.",
       "file_type": "rationale",
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L261",
-      "id": "test_agent_plugins_rationale_261",
       "community": 7,
-      "norm_label": "analyze_ocr_results \u2192 region \u1106\u1169\u11a8\u1105\u1169\u11a8 \u1107\u1161\u11ab\u1112\u116a\u11ab."
+      "norm_label": "analyze_ocr_results \u2192 region \u1106\u1169\u11a8\u1105\u1169\u11a8 \u1107\u1161\u11ab\u1112\u116a\u11ab.",
+      "id": "test_agent_plugins_rationale_261"
     },
     {
       "label": "generate_translation_context \u2192 dict \ubc18\ud658.",
       "file_type": "rationale",
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L277",
-      "id": "test_agent_plugins_rationale_277",
       "community": 7,
-      "norm_label": "generate_translation_context \u2192 dict \u1107\u1161\u11ab\u1112\u116a\u11ab."
+      "norm_label": "generate_translation_context \u2192 dict \u1107\u1161\u11ab\u1112\u116a\u11ab.",
+      "id": "test_agent_plugins_rationale_277"
     },
     {
       "label": "validate_translations \u2192 needs_review \ud50c\ub798\uadf8 \uc5c5\ub370\uc774\ud2b8.",
       "file_type": "rationale",
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L292",
-      "id": "test_agent_plugins_rationale_292",
       "community": 7,
-      "norm_label": "validate_translations \u2192 needs_review \u1111\u1173\u11af\u1105\u1162\u1100\u1173 \u110b\u1165\u11b8\u1103\u1166\u110b\u1175\u1110\u1173."
+      "norm_label": "validate_translations \u2192 needs_review \u1111\u1173\u11af\u1105\u1162\u1100\u1173 \u110b\u1165\u11b8\u1103\u1166\u110b\u1175\u1110\u1173.",
+      "id": "test_agent_plugins_rationale_292"
     },
     {
       "label": "Ollama\ub294 API \ud0a4 \ubd88\ud544\uc694 \u2192 \ud56d\uc0c1 \ube48 \ubaa9\ub85d.",
       "file_type": "rationale",
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L316",
-      "id": "test_agent_plugins_rationale_316",
       "community": 7,
-      "norm_label": "ollama\u1102\u1173\u11ab api \u110f\u1175 \u1107\u116e\u11af\u1111\u1175\u11af\u110b\u116d \u2192 \u1112\u1161\u11bc\u1109\u1161\u11bc \u1107\u1175\u11ab \u1106\u1169\u11a8\u1105\u1169\u11a8."
+      "norm_label": "ollama\u1102\u1173\u11ab api \u110f\u1175 \u1107\u116e\u11af\u1111\u1175\u11af\u110b\u116d \u2192 \u1112\u1161\u11bc\u1109\u1161\u11bc \u1107\u1175\u11ab \u1106\u1169\u11a8\u1105\u1169\u11a8.",
+      "id": "test_agent_plugins_rationale_316"
     },
     {
       "label": "test_font_service.py",
@@ -8438,9 +8438,9 @@
       "file_type": "rationale",
       "source_file": "tests/unit/test_config_manager.py",
       "source_location": "L216",
-      "id": "test_config_manager_rationale_216",
       "community": 6,
-      "norm_label": "raw config\u110b\u116a typed settings\u1100\u1161 \u1100\u1161\u11c0\u110b\u1173\u11ab \u1100\u1161\u11b9\u110b\u1173\u11af \u1107\u1169\u1103\u1169\u1105\u1169\u11a8 \u110b\u1172\u110c\u1175\u1112\u1161\u11ab\u1103\u1161."
+      "norm_label": "raw config\u110b\u116a typed settings\u1100\u1161 \u1100\u1161\u11c0\u110b\u1173\u11ab \u1100\u1161\u11b9\u110b\u1173\u11af \u1107\u1169\u1103\u1169\u1105\u1169\u11a8 \u110b\u1172\u110c\u1175\u1112\u1161\u11ab\u1103\u1161.",
+      "id": "test_config_manager_rationale_216"
     },
     {
       "label": "__init__.py",
@@ -39625,9 +39625,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_174",
       "_tgt": "processing_job_processingjob",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_174",
-      "target": "processing_job_processingjob",
-      "confidence_score": 0.5
+      "target": "processing_job_processingjob"
     },
     {
       "relation": "uses",
@@ -39637,9 +39637,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_174",
       "_tgt": "text_region_boundingbox",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_174",
-      "target": "text_region_boundingbox",
-      "confidence_score": 0.5
+      "target": "text_region_boundingbox"
     },
     {
       "relation": "uses",
@@ -39649,9 +39649,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_174",
       "_tgt": "text_region_textregion",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_174",
-      "target": "text_region_textregion",
-      "confidence_score": 0.5
+      "target": "text_region_textregion"
     },
     {
       "relation": "uses",
@@ -39661,9 +39661,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_174",
       "_tgt": "claude_agent_claudeagentplugin",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_174",
-      "target": "claude_agent_claudeagentplugin",
-      "confidence_score": 0.5
+      "target": "claude_agent_claudeagentplugin"
     },
     {
       "relation": "uses",
@@ -39673,9 +39673,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_174",
       "_tgt": "openai_agent_openaiagentplugin",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_174",
-      "target": "openai_agent_openaiagentplugin",
-      "confidence_score": 0.5
+      "target": "openai_agent_openaiagentplugin"
     },
     {
       "relation": "uses",
@@ -39685,9 +39685,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_174",
       "_tgt": "gemini_agent_geminiagentplugin",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_174",
-      "target": "gemini_agent_geminiagentplugin",
-      "confidence_score": 0.5
+      "target": "gemini_agent_geminiagentplugin"
     },
     {
       "relation": "uses",
@@ -39697,9 +39697,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_174",
       "_tgt": "ollama_agent_ollamaagentplugin",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_174",
-      "target": "ollama_agent_ollamaagentplugin",
-      "confidence_score": 0.5
+      "target": "ollama_agent_ollamaagentplugin"
     },
     {
       "relation": "uses",
@@ -39709,9 +39709,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_192",
       "_tgt": "processing_job_processingjob",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_192",
-      "target": "processing_job_processingjob",
-      "confidence_score": 0.5
+      "target": "processing_job_processingjob"
     },
     {
       "relation": "uses",
@@ -39721,9 +39721,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_192",
       "_tgt": "text_region_boundingbox",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_192",
-      "target": "text_region_boundingbox",
-      "confidence_score": 0.5
+      "target": "text_region_boundingbox"
     },
     {
       "relation": "uses",
@@ -39733,9 +39733,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_192",
       "_tgt": "text_region_textregion",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_192",
-      "target": "text_region_textregion",
-      "confidence_score": 0.5
+      "target": "text_region_textregion"
     },
     {
       "relation": "uses",
@@ -39745,9 +39745,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_192",
       "_tgt": "claude_agent_claudeagentplugin",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_192",
-      "target": "claude_agent_claudeagentplugin",
-      "confidence_score": 0.5
+      "target": "claude_agent_claudeagentplugin"
     },
     {
       "relation": "uses",
@@ -39757,9 +39757,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_192",
       "_tgt": "openai_agent_openaiagentplugin",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_192",
-      "target": "openai_agent_openaiagentplugin",
-      "confidence_score": 0.5
+      "target": "openai_agent_openaiagentplugin"
     },
     {
       "relation": "uses",
@@ -39769,9 +39769,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_192",
       "_tgt": "gemini_agent_geminiagentplugin",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_192",
-      "target": "gemini_agent_geminiagentplugin",
-      "confidence_score": 0.5
+      "target": "gemini_agent_geminiagentplugin"
     },
     {
       "relation": "uses",
@@ -39781,9 +39781,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_192",
       "_tgt": "ollama_agent_ollamaagentplugin",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_192",
-      "target": "ollama_agent_ollamaagentplugin",
-      "confidence_score": 0.5
+      "target": "ollama_agent_ollamaagentplugin"
     },
     {
       "relation": "uses",
@@ -39793,9 +39793,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_208",
       "_tgt": "processing_job_processingjob",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_208",
-      "target": "processing_job_processingjob",
-      "confidence_score": 0.5
+      "target": "processing_job_processingjob"
     },
     {
       "relation": "uses",
@@ -39805,9 +39805,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_208",
       "_tgt": "text_region_boundingbox",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_208",
-      "target": "text_region_boundingbox",
-      "confidence_score": 0.5
+      "target": "text_region_boundingbox"
     },
     {
       "relation": "uses",
@@ -39817,9 +39817,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_208",
       "_tgt": "text_region_textregion",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_208",
-      "target": "text_region_textregion",
-      "confidence_score": 0.5
+      "target": "text_region_textregion"
     },
     {
       "relation": "uses",
@@ -39829,9 +39829,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_208",
       "_tgt": "claude_agent_claudeagentplugin",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_208",
-      "target": "claude_agent_claudeagentplugin",
-      "confidence_score": 0.5
+      "target": "claude_agent_claudeagentplugin"
     },
     {
       "relation": "uses",
@@ -39841,9 +39841,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_208",
       "_tgt": "openai_agent_openaiagentplugin",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_208",
-      "target": "openai_agent_openaiagentplugin",
-      "confidence_score": 0.5
+      "target": "openai_agent_openaiagentplugin"
     },
     {
       "relation": "uses",
@@ -39853,9 +39853,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_208",
       "_tgt": "gemini_agent_geminiagentplugin",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_208",
-      "target": "gemini_agent_geminiagentplugin",
-      "confidence_score": 0.5
+      "target": "gemini_agent_geminiagentplugin"
     },
     {
       "relation": "uses",
@@ -39865,9 +39865,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_208",
       "_tgt": "ollama_agent_ollamaagentplugin",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_208",
-      "target": "ollama_agent_ollamaagentplugin",
-      "confidence_score": 0.5
+      "target": "ollama_agent_ollamaagentplugin"
     },
     {
       "relation": "uses",
@@ -39877,9 +39877,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_238",
       "_tgt": "processing_job_processingjob",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_238",
-      "target": "processing_job_processingjob",
-      "confidence_score": 0.5
+      "target": "processing_job_processingjob"
     },
     {
       "relation": "uses",
@@ -39889,9 +39889,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_238",
       "_tgt": "text_region_boundingbox",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_238",
-      "target": "text_region_boundingbox",
-      "confidence_score": 0.5
+      "target": "text_region_boundingbox"
     },
     {
       "relation": "uses",
@@ -39901,9 +39901,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_238",
       "_tgt": "text_region_textregion",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_238",
-      "target": "text_region_textregion",
-      "confidence_score": 0.5
+      "target": "text_region_textregion"
     },
     {
       "relation": "uses",
@@ -39913,9 +39913,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_238",
       "_tgt": "claude_agent_claudeagentplugin",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_238",
-      "target": "claude_agent_claudeagentplugin",
-      "confidence_score": 0.5
+      "target": "claude_agent_claudeagentplugin"
     },
     {
       "relation": "uses",
@@ -39925,9 +39925,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_238",
       "_tgt": "openai_agent_openaiagentplugin",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_238",
-      "target": "openai_agent_openaiagentplugin",
-      "confidence_score": 0.5
+      "target": "openai_agent_openaiagentplugin"
     },
     {
       "relation": "uses",
@@ -39937,9 +39937,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_238",
       "_tgt": "gemini_agent_geminiagentplugin",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_238",
-      "target": "gemini_agent_geminiagentplugin",
-      "confidence_score": 0.5
+      "target": "gemini_agent_geminiagentplugin"
     },
     {
       "relation": "uses",
@@ -39949,9 +39949,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_238",
       "_tgt": "ollama_agent_ollamaagentplugin",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_238",
-      "target": "ollama_agent_ollamaagentplugin",
-      "confidence_score": 0.5
+      "target": "ollama_agent_ollamaagentplugin"
     },
     {
       "relation": "uses",
@@ -39961,9 +39961,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_249",
       "_tgt": "processing_job_processingjob",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_249",
-      "target": "processing_job_processingjob",
-      "confidence_score": 0.5
+      "target": "processing_job_processingjob"
     },
     {
       "relation": "uses",
@@ -39973,9 +39973,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_249",
       "_tgt": "text_region_boundingbox",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_249",
-      "target": "text_region_boundingbox",
-      "confidence_score": 0.5
+      "target": "text_region_boundingbox"
     },
     {
       "relation": "uses",
@@ -39985,9 +39985,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_249",
       "_tgt": "text_region_textregion",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_249",
-      "target": "text_region_textregion",
-      "confidence_score": 0.5
+      "target": "text_region_textregion"
     },
     {
       "relation": "uses",
@@ -39997,9 +39997,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_249",
       "_tgt": "claude_agent_claudeagentplugin",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_249",
-      "target": "claude_agent_claudeagentplugin",
-      "confidence_score": 0.5
+      "target": "claude_agent_claudeagentplugin"
     },
     {
       "relation": "uses",
@@ -40009,9 +40009,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_249",
       "_tgt": "openai_agent_openaiagentplugin",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_249",
-      "target": "openai_agent_openaiagentplugin",
-      "confidence_score": 0.5
+      "target": "openai_agent_openaiagentplugin"
     },
     {
       "relation": "uses",
@@ -40021,9 +40021,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_249",
       "_tgt": "gemini_agent_geminiagentplugin",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_249",
-      "target": "gemini_agent_geminiagentplugin",
-      "confidence_score": 0.5
+      "target": "gemini_agent_geminiagentplugin"
     },
     {
       "relation": "uses",
@@ -40033,9 +40033,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_249",
       "_tgt": "ollama_agent_ollamaagentplugin",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_249",
-      "target": "ollama_agent_ollamaagentplugin",
-      "confidence_score": 0.5
+      "target": "ollama_agent_ollamaagentplugin"
     },
     {
       "relation": "uses",
@@ -40045,9 +40045,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_261",
       "_tgt": "processing_job_processingjob",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_261",
-      "target": "processing_job_processingjob",
-      "confidence_score": 0.5
+      "target": "processing_job_processingjob"
     },
     {
       "relation": "uses",
@@ -40057,9 +40057,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_261",
       "_tgt": "text_region_boundingbox",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_261",
-      "target": "text_region_boundingbox",
-      "confidence_score": 0.5
+      "target": "text_region_boundingbox"
     },
     {
       "relation": "uses",
@@ -40069,9 +40069,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_261",
       "_tgt": "text_region_textregion",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_261",
-      "target": "text_region_textregion",
-      "confidence_score": 0.5
+      "target": "text_region_textregion"
     },
     {
       "relation": "uses",
@@ -40081,9 +40081,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_261",
       "_tgt": "claude_agent_claudeagentplugin",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_261",
-      "target": "claude_agent_claudeagentplugin",
-      "confidence_score": 0.5
+      "target": "claude_agent_claudeagentplugin"
     },
     {
       "relation": "uses",
@@ -40093,9 +40093,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_261",
       "_tgt": "openai_agent_openaiagentplugin",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_261",
-      "target": "openai_agent_openaiagentplugin",
-      "confidence_score": 0.5
+      "target": "openai_agent_openaiagentplugin"
     },
     {
       "relation": "uses",
@@ -40105,9 +40105,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_261",
       "_tgt": "gemini_agent_geminiagentplugin",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_261",
-      "target": "gemini_agent_geminiagentplugin",
-      "confidence_score": 0.5
+      "target": "gemini_agent_geminiagentplugin"
     },
     {
       "relation": "uses",
@@ -40117,9 +40117,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_261",
       "_tgt": "ollama_agent_ollamaagentplugin",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_261",
-      "target": "ollama_agent_ollamaagentplugin",
-      "confidence_score": 0.5
+      "target": "ollama_agent_ollamaagentplugin"
     },
     {
       "relation": "uses",
@@ -40129,9 +40129,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_277",
       "_tgt": "processing_job_processingjob",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_277",
-      "target": "processing_job_processingjob",
-      "confidence_score": 0.5
+      "target": "processing_job_processingjob"
     },
     {
       "relation": "uses",
@@ -40141,9 +40141,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_277",
       "_tgt": "text_region_boundingbox",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_277",
-      "target": "text_region_boundingbox",
-      "confidence_score": 0.5
+      "target": "text_region_boundingbox"
     },
     {
       "relation": "uses",
@@ -40153,9 +40153,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_277",
       "_tgt": "text_region_textregion",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_277",
-      "target": "text_region_textregion",
-      "confidence_score": 0.5
+      "target": "text_region_textregion"
     },
     {
       "relation": "uses",
@@ -40165,9 +40165,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_277",
       "_tgt": "claude_agent_claudeagentplugin",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_277",
-      "target": "claude_agent_claudeagentplugin",
-      "confidence_score": 0.5
+      "target": "claude_agent_claudeagentplugin"
     },
     {
       "relation": "uses",
@@ -40177,9 +40177,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_277",
       "_tgt": "openai_agent_openaiagentplugin",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_277",
-      "target": "openai_agent_openaiagentplugin",
-      "confidence_score": 0.5
+      "target": "openai_agent_openaiagentplugin"
     },
     {
       "relation": "uses",
@@ -40189,9 +40189,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_277",
       "_tgt": "gemini_agent_geminiagentplugin",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_277",
-      "target": "gemini_agent_geminiagentplugin",
-      "confidence_score": 0.5
+      "target": "gemini_agent_geminiagentplugin"
     },
     {
       "relation": "uses",
@@ -40201,9 +40201,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_277",
       "_tgt": "ollama_agent_ollamaagentplugin",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_277",
-      "target": "ollama_agent_ollamaagentplugin",
-      "confidence_score": 0.5
+      "target": "ollama_agent_ollamaagentplugin"
     },
     {
       "relation": "uses",
@@ -40213,9 +40213,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_292",
       "_tgt": "processing_job_processingjob",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_292",
-      "target": "processing_job_processingjob",
-      "confidence_score": 0.5
+      "target": "processing_job_processingjob"
     },
     {
       "relation": "uses",
@@ -40225,9 +40225,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_292",
       "_tgt": "text_region_boundingbox",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_292",
-      "target": "text_region_boundingbox",
-      "confidence_score": 0.5
+      "target": "text_region_boundingbox"
     },
     {
       "relation": "uses",
@@ -40237,9 +40237,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_292",
       "_tgt": "text_region_textregion",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_292",
-      "target": "text_region_textregion",
-      "confidence_score": 0.5
+      "target": "text_region_textregion"
     },
     {
       "relation": "uses",
@@ -40249,9 +40249,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_292",
       "_tgt": "claude_agent_claudeagentplugin",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_292",
-      "target": "claude_agent_claudeagentplugin",
-      "confidence_score": 0.5
+      "target": "claude_agent_claudeagentplugin"
     },
     {
       "relation": "uses",
@@ -40261,9 +40261,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_292",
       "_tgt": "openai_agent_openaiagentplugin",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_292",
-      "target": "openai_agent_openaiagentplugin",
-      "confidence_score": 0.5
+      "target": "openai_agent_openaiagentplugin"
     },
     {
       "relation": "uses",
@@ -40273,9 +40273,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_292",
       "_tgt": "gemini_agent_geminiagentplugin",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_292",
-      "target": "gemini_agent_geminiagentplugin",
-      "confidence_score": 0.5
+      "target": "gemini_agent_geminiagentplugin"
     },
     {
       "relation": "uses",
@@ -40285,9 +40285,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_292",
       "_tgt": "ollama_agent_ollamaagentplugin",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_292",
-      "target": "ollama_agent_ollamaagentplugin",
-      "confidence_score": 0.5
+      "target": "ollama_agent_ollamaagentplugin"
     },
     {
       "relation": "uses",
@@ -40297,9 +40297,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_316",
       "_tgt": "processing_job_processingjob",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_316",
-      "target": "processing_job_processingjob",
-      "confidence_score": 0.5
+      "target": "processing_job_processingjob"
     },
     {
       "relation": "uses",
@@ -40309,9 +40309,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_316",
       "_tgt": "text_region_boundingbox",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_316",
-      "target": "text_region_boundingbox",
-      "confidence_score": 0.5
+      "target": "text_region_boundingbox"
     },
     {
       "relation": "uses",
@@ -40321,9 +40321,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_316",
       "_tgt": "text_region_textregion",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_316",
-      "target": "text_region_textregion",
-      "confidence_score": 0.5
+      "target": "text_region_textregion"
     },
     {
       "relation": "uses",
@@ -40333,9 +40333,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_316",
       "_tgt": "claude_agent_claudeagentplugin",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_316",
-      "target": "claude_agent_claudeagentplugin",
-      "confidence_score": 0.5
+      "target": "claude_agent_claudeagentplugin"
     },
     {
       "relation": "uses",
@@ -40345,9 +40345,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_316",
       "_tgt": "openai_agent_openaiagentplugin",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_316",
-      "target": "openai_agent_openaiagentplugin",
-      "confidence_score": 0.5
+      "target": "openai_agent_openaiagentplugin"
     },
     {
       "relation": "uses",
@@ -40357,9 +40357,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_316",
       "_tgt": "gemini_agent_geminiagentplugin",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_316",
-      "target": "gemini_agent_geminiagentplugin",
-      "confidence_score": 0.5
+      "target": "gemini_agent_geminiagentplugin"
     },
     {
       "relation": "uses",
@@ -40369,9 +40369,9 @@
       "weight": 0.8,
       "_src": "test_agent_plugins_rationale_316",
       "_tgt": "ollama_agent_ollamaagentplugin",
+      "confidence_score": 0.5,
       "source": "test_agent_plugins_rationale_316",
-      "target": "ollama_agent_ollamaagentplugin",
-      "confidence_score": 0.5
+      "target": "ollama_agent_ollamaagentplugin"
     },
     {
       "relation": "contains",
@@ -60529,9 +60529,9 @@
       "weight": 0.8,
       "_src": "test_config_manager_testpluginregistrydefaults",
       "_tgt": "config_manager_configmanager",
+      "confidence_score": 0.5,
       "source": "test_config_manager_testpluginregistrydefaults",
-      "target": "config_manager_configmanager",
-      "confidence_score": 0.5
+      "target": "config_manager_configmanager"
     },
     {
       "relation": "calls",
@@ -61321,9 +61321,9 @@
       "weight": 0.8,
       "_src": "test_config_manager_rationale_216",
       "_tgt": "config_manager_configmanager",
+      "confidence_score": 0.5,
       "source": "test_config_manager_rationale_216",
-      "target": "config_manager_configmanager",
-      "confidence_score": 0.5
+      "target": "config_manager_configmanager"
     },
     {
       "relation": "contains",
@@ -81047,8 +81047,8 @@
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L242",
       "weight": 0.8,
-      "_src": "test_agent_plugins_rationale_184",
-      "_tgt": "gemini_agent_geminiagentplugin",
+      "_src": "gemini_agent_geminiagentplugin",
+      "_tgt": "test_agent_plugins_rationale_184",
       "confidence_score": 0.5,
       "source": "gemini_agent_geminiagentplugin",
       "target": "test_agent_plugins_rationale_184"
@@ -81059,8 +81059,8 @@
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L242",
       "weight": 0.8,
-      "_src": "test_agent_plugins_rationale_200",
-      "_tgt": "gemini_agent_geminiagentplugin",
+      "_src": "gemini_agent_geminiagentplugin",
+      "_tgt": "test_agent_plugins_rationale_200",
       "confidence_score": 0.5,
       "source": "gemini_agent_geminiagentplugin",
       "target": "test_agent_plugins_rationale_200"
@@ -81071,8 +81071,8 @@
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L242",
       "weight": 0.8,
-      "_src": "test_agent_plugins_rationale_230",
-      "_tgt": "gemini_agent_geminiagentplugin",
+      "_src": "gemini_agent_geminiagentplugin",
+      "_tgt": "test_agent_plugins_rationale_230",
       "confidence_score": 0.5,
       "source": "gemini_agent_geminiagentplugin",
       "target": "test_agent_plugins_rationale_230"
@@ -81083,8 +81083,8 @@
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L242",
       "weight": 0.8,
-      "_src": "test_agent_plugins_rationale_241",
-      "_tgt": "gemini_agent_geminiagentplugin",
+      "_src": "gemini_agent_geminiagentplugin",
+      "_tgt": "test_agent_plugins_rationale_241",
       "confidence_score": 0.5,
       "source": "gemini_agent_geminiagentplugin",
       "target": "test_agent_plugins_rationale_241"
@@ -81095,8 +81095,8 @@
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L242",
       "weight": 0.8,
-      "_src": "test_agent_plugins_rationale_253",
-      "_tgt": "gemini_agent_geminiagentplugin",
+      "_src": "gemini_agent_geminiagentplugin",
+      "_tgt": "test_agent_plugins_rationale_253",
       "confidence_score": 0.5,
       "source": "gemini_agent_geminiagentplugin",
       "target": "test_agent_plugins_rationale_253"
@@ -81107,8 +81107,8 @@
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L242",
       "weight": 0.8,
-      "_src": "test_agent_plugins_rationale_269",
-      "_tgt": "gemini_agent_geminiagentplugin",
+      "_src": "gemini_agent_geminiagentplugin",
+      "_tgt": "test_agent_plugins_rationale_269",
       "confidence_score": 0.5,
       "source": "gemini_agent_geminiagentplugin",
       "target": "test_agent_plugins_rationale_269"
@@ -81119,8 +81119,8 @@
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L242",
       "weight": 0.8,
-      "_src": "test_agent_plugins_rationale_284",
-      "_tgt": "gemini_agent_geminiagentplugin",
+      "_src": "gemini_agent_geminiagentplugin",
+      "_tgt": "test_agent_plugins_rationale_284",
       "confidence_score": 0.5,
       "source": "gemini_agent_geminiagentplugin",
       "target": "test_agent_plugins_rationale_284"
@@ -81131,8 +81131,8 @@
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L242",
       "weight": 0.8,
-      "_src": "test_agent_plugins_rationale_308",
-      "_tgt": "gemini_agent_geminiagentplugin",
+      "_src": "gemini_agent_geminiagentplugin",
+      "_tgt": "test_agent_plugins_rationale_308",
       "confidence_score": 0.5,
       "source": "gemini_agent_geminiagentplugin",
       "target": "test_agent_plugins_rationale_308"
@@ -81539,8 +81539,8 @@
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L156",
       "weight": 0.8,
-      "_src": "test_agent_plugins_rationale_184",
-      "_tgt": "openai_agent_openaiagentplugin",
+      "_src": "openai_agent_openaiagentplugin",
+      "_tgt": "test_agent_plugins_rationale_184",
       "confidence_score": 0.5,
       "source": "openai_agent_openaiagentplugin",
       "target": "test_agent_plugins_rationale_184"
@@ -81551,8 +81551,8 @@
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L156",
       "weight": 0.8,
-      "_src": "test_agent_plugins_rationale_200",
-      "_tgt": "openai_agent_openaiagentplugin",
+      "_src": "openai_agent_openaiagentplugin",
+      "_tgt": "test_agent_plugins_rationale_200",
       "confidence_score": 0.5,
       "source": "openai_agent_openaiagentplugin",
       "target": "test_agent_plugins_rationale_200"
@@ -81563,8 +81563,8 @@
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L156",
       "weight": 0.8,
-      "_src": "test_agent_plugins_rationale_230",
-      "_tgt": "openai_agent_openaiagentplugin",
+      "_src": "openai_agent_openaiagentplugin",
+      "_tgt": "test_agent_plugins_rationale_230",
       "confidence_score": 0.5,
       "source": "openai_agent_openaiagentplugin",
       "target": "test_agent_plugins_rationale_230"
@@ -81575,8 +81575,8 @@
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L156",
       "weight": 0.8,
-      "_src": "test_agent_plugins_rationale_241",
-      "_tgt": "openai_agent_openaiagentplugin",
+      "_src": "openai_agent_openaiagentplugin",
+      "_tgt": "test_agent_plugins_rationale_241",
       "confidence_score": 0.5,
       "source": "openai_agent_openaiagentplugin",
       "target": "test_agent_plugins_rationale_241"
@@ -81587,8 +81587,8 @@
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L156",
       "weight": 0.8,
-      "_src": "test_agent_plugins_rationale_253",
-      "_tgt": "openai_agent_openaiagentplugin",
+      "_src": "openai_agent_openaiagentplugin",
+      "_tgt": "test_agent_plugins_rationale_253",
       "confidence_score": 0.5,
       "source": "openai_agent_openaiagentplugin",
       "target": "test_agent_plugins_rationale_253"
@@ -81599,8 +81599,8 @@
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L156",
       "weight": 0.8,
-      "_src": "test_agent_plugins_rationale_269",
-      "_tgt": "openai_agent_openaiagentplugin",
+      "_src": "openai_agent_openaiagentplugin",
+      "_tgt": "test_agent_plugins_rationale_269",
       "confidence_score": 0.5,
       "source": "openai_agent_openaiagentplugin",
       "target": "test_agent_plugins_rationale_269"
@@ -81611,8 +81611,8 @@
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L156",
       "weight": 0.8,
-      "_src": "test_agent_plugins_rationale_284",
-      "_tgt": "openai_agent_openaiagentplugin",
+      "_src": "openai_agent_openaiagentplugin",
+      "_tgt": "test_agent_plugins_rationale_284",
       "confidence_score": 0.5,
       "source": "openai_agent_openaiagentplugin",
       "target": "test_agent_plugins_rationale_284"
@@ -81623,8 +81623,8 @@
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L156",
       "weight": 0.8,
-      "_src": "test_agent_plugins_rationale_308",
-      "_tgt": "openai_agent_openaiagentplugin",
+      "_src": "openai_agent_openaiagentplugin",
+      "_tgt": "test_agent_plugins_rationale_308",
       "confidence_score": 0.5,
       "source": "openai_agent_openaiagentplugin",
       "target": "test_agent_plugins_rationale_308"
@@ -82031,8 +82031,8 @@
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L309",
       "weight": 0.8,
-      "_src": "test_agent_plugins_rationale_184",
-      "_tgt": "ollama_agent_ollamaagentplugin",
+      "_src": "ollama_agent_ollamaagentplugin",
+      "_tgt": "test_agent_plugins_rationale_184",
       "confidence_score": 0.5,
       "source": "ollama_agent_ollamaagentplugin",
       "target": "test_agent_plugins_rationale_184"
@@ -82043,8 +82043,8 @@
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L309",
       "weight": 0.8,
-      "_src": "test_agent_plugins_rationale_200",
-      "_tgt": "ollama_agent_ollamaagentplugin",
+      "_src": "ollama_agent_ollamaagentplugin",
+      "_tgt": "test_agent_plugins_rationale_200",
       "confidence_score": 0.5,
       "source": "ollama_agent_ollamaagentplugin",
       "target": "test_agent_plugins_rationale_200"
@@ -82055,8 +82055,8 @@
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L309",
       "weight": 0.8,
-      "_src": "test_agent_plugins_rationale_230",
-      "_tgt": "ollama_agent_ollamaagentplugin",
+      "_src": "ollama_agent_ollamaagentplugin",
+      "_tgt": "test_agent_plugins_rationale_230",
       "confidence_score": 0.5,
       "source": "ollama_agent_ollamaagentplugin",
       "target": "test_agent_plugins_rationale_230"
@@ -82067,8 +82067,8 @@
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L309",
       "weight": 0.8,
-      "_src": "test_agent_plugins_rationale_241",
-      "_tgt": "ollama_agent_ollamaagentplugin",
+      "_src": "ollama_agent_ollamaagentplugin",
+      "_tgt": "test_agent_plugins_rationale_241",
       "confidence_score": 0.5,
       "source": "ollama_agent_ollamaagentplugin",
       "target": "test_agent_plugins_rationale_241"
@@ -82079,8 +82079,8 @@
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L309",
       "weight": 0.8,
-      "_src": "test_agent_plugins_rationale_253",
-      "_tgt": "ollama_agent_ollamaagentplugin",
+      "_src": "ollama_agent_ollamaagentplugin",
+      "_tgt": "test_agent_plugins_rationale_253",
       "confidence_score": 0.5,
       "source": "ollama_agent_ollamaagentplugin",
       "target": "test_agent_plugins_rationale_253"
@@ -82091,8 +82091,8 @@
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L309",
       "weight": 0.8,
-      "_src": "test_agent_plugins_rationale_269",
-      "_tgt": "ollama_agent_ollamaagentplugin",
+      "_src": "ollama_agent_ollamaagentplugin",
+      "_tgt": "test_agent_plugins_rationale_269",
       "confidence_score": 0.5,
       "source": "ollama_agent_ollamaagentplugin",
       "target": "test_agent_plugins_rationale_269"
@@ -82103,8 +82103,8 @@
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L309",
       "weight": 0.8,
-      "_src": "test_agent_plugins_rationale_284",
-      "_tgt": "ollama_agent_ollamaagentplugin",
+      "_src": "ollama_agent_ollamaagentplugin",
+      "_tgt": "test_agent_plugins_rationale_284",
       "confidence_score": 0.5,
       "source": "ollama_agent_ollamaagentplugin",
       "target": "test_agent_plugins_rationale_284"
@@ -82115,8 +82115,8 @@
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L309",
       "weight": 0.8,
-      "_src": "test_agent_plugins_rationale_308",
-      "_tgt": "ollama_agent_ollamaagentplugin",
+      "_src": "ollama_agent_ollamaagentplugin",
+      "_tgt": "test_agent_plugins_rationale_308",
       "confidence_score": 0.5,
       "source": "ollama_agent_ollamaagentplugin",
       "target": "test_agent_plugins_rationale_308"
@@ -82511,8 +82511,8 @@
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L95",
       "weight": 0.8,
-      "_src": "test_agent_plugins_rationale_184",
-      "_tgt": "claude_agent_claudeagentplugin",
+      "_src": "claude_agent_claudeagentplugin",
+      "_tgt": "test_agent_plugins_rationale_184",
       "confidence_score": 0.5,
       "source": "claude_agent_claudeagentplugin",
       "target": "test_agent_plugins_rationale_184"
@@ -82523,8 +82523,8 @@
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L95",
       "weight": 0.8,
-      "_src": "test_agent_plugins_rationale_200",
-      "_tgt": "claude_agent_claudeagentplugin",
+      "_src": "claude_agent_claudeagentplugin",
+      "_tgt": "test_agent_plugins_rationale_200",
       "confidence_score": 0.5,
       "source": "claude_agent_claudeagentplugin",
       "target": "test_agent_plugins_rationale_200"
@@ -82535,8 +82535,8 @@
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L95",
       "weight": 0.8,
-      "_src": "test_agent_plugins_rationale_230",
-      "_tgt": "claude_agent_claudeagentplugin",
+      "_src": "claude_agent_claudeagentplugin",
+      "_tgt": "test_agent_plugins_rationale_230",
       "confidence_score": 0.5,
       "source": "claude_agent_claudeagentplugin",
       "target": "test_agent_plugins_rationale_230"
@@ -82547,8 +82547,8 @@
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L95",
       "weight": 0.8,
-      "_src": "test_agent_plugins_rationale_241",
-      "_tgt": "claude_agent_claudeagentplugin",
+      "_src": "claude_agent_claudeagentplugin",
+      "_tgt": "test_agent_plugins_rationale_241",
       "confidence_score": 0.5,
       "source": "claude_agent_claudeagentplugin",
       "target": "test_agent_plugins_rationale_241"
@@ -82559,8 +82559,8 @@
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L95",
       "weight": 0.8,
-      "_src": "test_agent_plugins_rationale_253",
-      "_tgt": "claude_agent_claudeagentplugin",
+      "_src": "claude_agent_claudeagentplugin",
+      "_tgt": "test_agent_plugins_rationale_253",
       "confidence_score": 0.5,
       "source": "claude_agent_claudeagentplugin",
       "target": "test_agent_plugins_rationale_253"
@@ -82571,8 +82571,8 @@
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L95",
       "weight": 0.8,
-      "_src": "test_agent_plugins_rationale_269",
-      "_tgt": "claude_agent_claudeagentplugin",
+      "_src": "claude_agent_claudeagentplugin",
+      "_tgt": "test_agent_plugins_rationale_269",
       "confidence_score": 0.5,
       "source": "claude_agent_claudeagentplugin",
       "target": "test_agent_plugins_rationale_269"
@@ -82583,8 +82583,8 @@
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L95",
       "weight": 0.8,
-      "_src": "test_agent_plugins_rationale_284",
-      "_tgt": "claude_agent_claudeagentplugin",
+      "_src": "claude_agent_claudeagentplugin",
+      "_tgt": "test_agent_plugins_rationale_284",
       "confidence_score": 0.5,
       "source": "claude_agent_claudeagentplugin",
       "target": "test_agent_plugins_rationale_284"
@@ -82595,8 +82595,8 @@
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L95",
       "weight": 0.8,
-      "_src": "test_agent_plugins_rationale_308",
-      "_tgt": "claude_agent_claudeagentplugin",
+      "_src": "claude_agent_claudeagentplugin",
+      "_tgt": "test_agent_plugins_rationale_308",
       "confidence_score": 0.5,
       "source": "claude_agent_claudeagentplugin",
       "target": "test_agent_plugins_rationale_308"
@@ -84683,8 +84683,8 @@
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L10",
       "weight": 0.8,
-      "_src": "test_agent_plugins_rationale_184",
-      "_tgt": "text_region_boundingbox",
+      "_src": "text_region_boundingbox",
+      "_tgt": "test_agent_plugins_rationale_184",
       "confidence_score": 0.5,
       "source": "text_region_boundingbox",
       "target": "test_agent_plugins_rationale_184"
@@ -84695,8 +84695,8 @@
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L10",
       "weight": 0.8,
-      "_src": "test_agent_plugins_rationale_200",
-      "_tgt": "text_region_boundingbox",
+      "_src": "text_region_boundingbox",
+      "_tgt": "test_agent_plugins_rationale_200",
       "confidence_score": 0.5,
       "source": "text_region_boundingbox",
       "target": "test_agent_plugins_rationale_200"
@@ -84707,8 +84707,8 @@
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L10",
       "weight": 0.8,
-      "_src": "test_agent_plugins_rationale_230",
-      "_tgt": "text_region_boundingbox",
+      "_src": "text_region_boundingbox",
+      "_tgt": "test_agent_plugins_rationale_230",
       "confidence_score": 0.5,
       "source": "text_region_boundingbox",
       "target": "test_agent_plugins_rationale_230"
@@ -84719,8 +84719,8 @@
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L10",
       "weight": 0.8,
-      "_src": "test_agent_plugins_rationale_241",
-      "_tgt": "text_region_boundingbox",
+      "_src": "text_region_boundingbox",
+      "_tgt": "test_agent_plugins_rationale_241",
       "confidence_score": 0.5,
       "source": "text_region_boundingbox",
       "target": "test_agent_plugins_rationale_241"
@@ -84731,8 +84731,8 @@
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L10",
       "weight": 0.8,
-      "_src": "test_agent_plugins_rationale_253",
-      "_tgt": "text_region_boundingbox",
+      "_src": "text_region_boundingbox",
+      "_tgt": "test_agent_plugins_rationale_253",
       "confidence_score": 0.5,
       "source": "text_region_boundingbox",
       "target": "test_agent_plugins_rationale_253"
@@ -84743,8 +84743,8 @@
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L10",
       "weight": 0.8,
-      "_src": "test_agent_plugins_rationale_269",
-      "_tgt": "text_region_boundingbox",
+      "_src": "text_region_boundingbox",
+      "_tgt": "test_agent_plugins_rationale_269",
       "confidence_score": 0.5,
       "source": "text_region_boundingbox",
       "target": "test_agent_plugins_rationale_269"
@@ -84755,8 +84755,8 @@
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L10",
       "weight": 0.8,
-      "_src": "test_agent_plugins_rationale_284",
-      "_tgt": "text_region_boundingbox",
+      "_src": "text_region_boundingbox",
+      "_tgt": "test_agent_plugins_rationale_284",
       "confidence_score": 0.5,
       "source": "text_region_boundingbox",
       "target": "test_agent_plugins_rationale_284"
@@ -84767,8 +84767,8 @@
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L10",
       "weight": 0.8,
-      "_src": "test_agent_plugins_rationale_308",
-      "_tgt": "text_region_boundingbox",
+      "_src": "text_region_boundingbox",
+      "_tgt": "test_agent_plugins_rationale_308",
       "confidence_score": 0.5,
       "source": "text_region_boundingbox",
       "target": "test_agent_plugins_rationale_308"
@@ -85871,8 +85871,8 @@
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L10",
       "weight": 0.8,
-      "_src": "test_agent_plugins_rationale_184",
-      "_tgt": "text_region_textregion",
+      "_src": "text_region_textregion",
+      "_tgt": "test_agent_plugins_rationale_184",
       "confidence_score": 0.5,
       "source": "text_region_textregion",
       "target": "test_agent_plugins_rationale_184"
@@ -85883,8 +85883,8 @@
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L10",
       "weight": 0.8,
-      "_src": "test_agent_plugins_rationale_200",
-      "_tgt": "text_region_textregion",
+      "_src": "text_region_textregion",
+      "_tgt": "test_agent_plugins_rationale_200",
       "confidence_score": 0.5,
       "source": "text_region_textregion",
       "target": "test_agent_plugins_rationale_200"
@@ -85895,8 +85895,8 @@
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L10",
       "weight": 0.8,
-      "_src": "test_agent_plugins_rationale_230",
-      "_tgt": "text_region_textregion",
+      "_src": "text_region_textregion",
+      "_tgt": "test_agent_plugins_rationale_230",
       "confidence_score": 0.5,
       "source": "text_region_textregion",
       "target": "test_agent_plugins_rationale_230"
@@ -85907,8 +85907,8 @@
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L10",
       "weight": 0.8,
-      "_src": "test_agent_plugins_rationale_241",
-      "_tgt": "text_region_textregion",
+      "_src": "text_region_textregion",
+      "_tgt": "test_agent_plugins_rationale_241",
       "confidence_score": 0.5,
       "source": "text_region_textregion",
       "target": "test_agent_plugins_rationale_241"
@@ -85919,8 +85919,8 @@
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L10",
       "weight": 0.8,
-      "_src": "test_agent_plugins_rationale_253",
-      "_tgt": "text_region_textregion",
+      "_src": "text_region_textregion",
+      "_tgt": "test_agent_plugins_rationale_253",
       "confidence_score": 0.5,
       "source": "text_region_textregion",
       "target": "test_agent_plugins_rationale_253"
@@ -85931,8 +85931,8 @@
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L10",
       "weight": 0.8,
-      "_src": "test_agent_plugins_rationale_269",
-      "_tgt": "text_region_textregion",
+      "_src": "text_region_textregion",
+      "_tgt": "test_agent_plugins_rationale_269",
       "confidence_score": 0.5,
       "source": "text_region_textregion",
       "target": "test_agent_plugins_rationale_269"
@@ -85943,8 +85943,8 @@
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L10",
       "weight": 0.8,
-      "_src": "test_agent_plugins_rationale_284",
-      "_tgt": "text_region_textregion",
+      "_src": "text_region_textregion",
+      "_tgt": "test_agent_plugins_rationale_284",
       "confidence_score": 0.5,
       "source": "text_region_textregion",
       "target": "test_agent_plugins_rationale_284"
@@ -85955,8 +85955,8 @@
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L10",
       "weight": 0.8,
-      "_src": "test_agent_plugins_rationale_308",
-      "_tgt": "text_region_textregion",
+      "_src": "text_region_textregion",
+      "_tgt": "test_agent_plugins_rationale_308",
       "confidence_score": 0.5,
       "source": "text_region_textregion",
       "target": "test_agent_plugins_rationale_308"
@@ -88223,8 +88223,8 @@
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L9",
       "weight": 0.8,
-      "_src": "test_agent_plugins_rationale_184",
-      "_tgt": "processing_job_processingjob",
+      "_src": "processing_job_processingjob",
+      "_tgt": "test_agent_plugins_rationale_184",
       "confidence_score": 0.5,
       "source": "processing_job_processingjob",
       "target": "test_agent_plugins_rationale_184"
@@ -88235,8 +88235,8 @@
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L9",
       "weight": 0.8,
-      "_src": "test_agent_plugins_rationale_200",
-      "_tgt": "processing_job_processingjob",
+      "_src": "processing_job_processingjob",
+      "_tgt": "test_agent_plugins_rationale_200",
       "confidence_score": 0.5,
       "source": "processing_job_processingjob",
       "target": "test_agent_plugins_rationale_200"
@@ -88247,8 +88247,8 @@
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L9",
       "weight": 0.8,
-      "_src": "test_agent_plugins_rationale_230",
-      "_tgt": "processing_job_processingjob",
+      "_src": "processing_job_processingjob",
+      "_tgt": "test_agent_plugins_rationale_230",
       "confidence_score": 0.5,
       "source": "processing_job_processingjob",
       "target": "test_agent_plugins_rationale_230"
@@ -88259,8 +88259,8 @@
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L9",
       "weight": 0.8,
-      "_src": "test_agent_plugins_rationale_241",
-      "_tgt": "processing_job_processingjob",
+      "_src": "processing_job_processingjob",
+      "_tgt": "test_agent_plugins_rationale_241",
       "confidence_score": 0.5,
       "source": "processing_job_processingjob",
       "target": "test_agent_plugins_rationale_241"
@@ -88271,8 +88271,8 @@
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L9",
       "weight": 0.8,
-      "_src": "test_agent_plugins_rationale_253",
-      "_tgt": "processing_job_processingjob",
+      "_src": "processing_job_processingjob",
+      "_tgt": "test_agent_plugins_rationale_253",
       "confidence_score": 0.5,
       "source": "processing_job_processingjob",
       "target": "test_agent_plugins_rationale_253"
@@ -88283,8 +88283,8 @@
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L9",
       "weight": 0.8,
-      "_src": "test_agent_plugins_rationale_269",
-      "_tgt": "processing_job_processingjob",
+      "_src": "processing_job_processingjob",
+      "_tgt": "test_agent_plugins_rationale_269",
       "confidence_score": 0.5,
       "source": "processing_job_processingjob",
       "target": "test_agent_plugins_rationale_269"
@@ -88295,8 +88295,8 @@
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L9",
       "weight": 0.8,
-      "_src": "test_agent_plugins_rationale_284",
-      "_tgt": "processing_job_processingjob",
+      "_src": "processing_job_processingjob",
+      "_tgt": "test_agent_plugins_rationale_284",
       "confidence_score": 0.5,
       "source": "processing_job_processingjob",
       "target": "test_agent_plugins_rationale_284"
@@ -88307,8 +88307,8 @@
       "source_file": "tests/unit/test_agent_plugins.py",
       "source_location": "L9",
       "weight": 0.8,
-      "_src": "test_agent_plugins_rationale_308",
-      "_tgt": "processing_job_processingjob",
+      "_src": "processing_job_processingjob",
+      "_tgt": "test_agent_plugins_rationale_308",
       "confidence_score": 0.5,
       "source": "processing_job_processingjob",
       "target": "test_agent_plugins_rationale_308"

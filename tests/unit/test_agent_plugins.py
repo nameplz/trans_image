@@ -162,6 +162,14 @@ class TestOpenAIAgentPlugin:
 # ── Gemini ────────────────────────────────────────────────────────────────────
 
 class TestGeminiAgentPlugin:
+    def test_uses_flash_lite_preview_as_default_model(self):
+        """명시 설정이 없으면 최신 Gemini agent 기본 모델을 사용한다."""
+        from src.plugins.agents.gemini_agent import GeminiAgentPlugin
+
+        plugin = GeminiAgentPlugin(config={"api_key": "test-key"})
+
+        assert plugin._model == "gemini-3.1-flash-lite-preview"
+
     async def test_analyze_ocr_results_returns_regions(self):
         """analyze_ocr_results → region 목록 반환."""
         from src.plugins.agents.gemini_agent import GeminiAgentPlugin

@@ -199,6 +199,19 @@ class TestGetApiKeyDefensiveAgainstDict:
         assert any("DEEPL_API_KEY" in msg or "deepl" in msg.lower() for msg in warning_messages)
 
 
+class TestPluginRegistryDefaults:
+    """프로젝트 기본 plugins.yaml 회귀 검증."""
+
+    def test_default_plugins_yaml_uses_flash_lite_preview_for_gemini_agent(self):
+        mgr = ConfigManager()
+        mgr.load()
+
+        entry = mgr.get_plugin_config("agents", "gemini")
+
+        assert entry is not None
+        assert entry.config["model"] == "gemini-3.1-flash-lite-preview"
+
+
 class TestTypedSettingsSynchronization:
     """raw config와 typed settings가 같은 값을 보도록 유지한다."""
 

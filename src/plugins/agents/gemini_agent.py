@@ -25,7 +25,7 @@ class GeminiAgentPlugin(AbstractAgentPlugin):
         super().__init__(config)
         self._client = None
         self._api_key = self.get_config("api_key", "")
-        self._model = self.get_config("model", "gemini-1.5-flash")
+        self._model = self.get_config("model", "gemini-3.1-flash-lite-preview")
 
     async def load(self) -> None:
         errors = self.validate_config()

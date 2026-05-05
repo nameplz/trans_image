@@ -62,6 +62,14 @@ class ConfigManager:
         except OSError as e:
             raise ConfigError(f"설정 저장 실패: {e}") from e
 
+    def save_plugins(self) -> None:
+        """현재 플러그인 레지스트리를 파일에 저장."""
+        try:
+            with open(self._plugins_path, "w", encoding="utf-8") as f:
+                yaml.dump(self._plugins, f, allow_unicode=True, default_flow_style=False)
+        except OSError as e:
+            raise ConfigError(f"플러그인 설정 저장 실패: {e}") from e
+
     # --- 설정 조회 ---
 
     def get(self, *keys: str, default: Any = None) -> Any:
@@ -88,6 +96,34 @@ class ConfigManager:
             node = child
         node[keys[-1]] = value
         self._refresh_typed_settings_for_section(keys[0])
+
+    def set_plugin_config_value(
+        self,
+        plugin_type: str,
+        plugin_id: str,
+        config_key: str,
+        *,
+        value: Any,
+    ) -> None:
+        entries = self._plugins.get(plugin_type)
+        if not isinstance(entries, list):
+            raise ConfigError(f"플러그인 섹션 누락 또는 타입 오류: {plugin_type}")
+
+        for entry in entries:
+            if not isinstance(entry, dict):
+                continue
+            if entry.get("id") != plugin_id:
+                continue
+
+            config = entry.get("config")
+            if not isinstance(config, dict):
+                config = {}
+                entry["config"] = config
+            config[config_key] = value
+            self._plugin_registry = PluginRegistry.from_dict(self._plugins)
+            return
+
+        raise ConfigError(f"플러그인 없음: {plugin_type}/{plugin_id}")
 
     def add_recent_file(self, path: Path, *, save: bool = False) -> None:
         normalized = str(path.expanduser().resolve(strict=False))

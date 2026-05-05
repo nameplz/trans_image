@@ -41,6 +41,7 @@ class SettingsDialog(QDialog):
         self._panel._on_apply()
         try:
             self._config.save()
+            self._config.save_plugins()
         except ConfigError as exc:
             QMessageBox.critical(self, "설정 저장 실패", str(exc))
             return

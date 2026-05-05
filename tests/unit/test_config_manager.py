@@ -7,8 +7,6 @@ from __future__ import annotations
 import os
 from pathlib import Path
 from unittest.mock import patch
-
-import pytest
 import yaml
 
 from src.core.config_manager import ConfigManager
@@ -210,6 +208,46 @@ class TestPluginRegistryDefaults:
 
         assert entry is not None
         assert entry.config["model"] == "gemini-3.1-flash-lite-preview"
+
+
+class TestPluginConfigPersistence:
+    def test_set_plugin_config_value_updates_registry_and_persists_after_reload(self, tmp_path):
+        cfg_path = _write_yaml(tmp_path, {})
+        plugins_path = tmp_path / "plugins.yaml"
+        plugins_path.write_text(
+            yaml.dump(
+                {
+                    "ocr": [
+                        {
+                            "id": "easyocr",
+                            "enabled": True,
+                            "module": "src.plugins.ocr.easyocr_plugin",
+                            "class": "EasyOCRPlugin",
+                            "config": {"gpu": False, "download_enabled": True},
+                        }
+                    ]
+                },
+                allow_unicode=True,
+            ),
+            encoding="utf-8",
+        )
+
+        mgr = ConfigManager(config_path=cfg_path, plugins_path=plugins_path)
+        mgr.load()
+
+        mgr.set_plugin_config_value("ocr", "easyocr", "gpu", value=True)
+
+        updated_entry = mgr.get_plugin_config("ocr", "easyocr")
+        assert updated_entry is not None
+        assert updated_entry.config["gpu"] is True
+
+        mgr.save_plugins()
+
+        reloaded = ConfigManager(config_path=cfg_path, plugins_path=plugins_path)
+        reloaded.load()
+        reloaded_entry = reloaded.get_plugin_config("ocr", "easyocr")
+        assert reloaded_entry is not None
+        assert reloaded_entry.config["gpu"] is True
 
 
 class TestTypedSettingsSynchronization:

@@ -26,6 +26,34 @@ def make_paddleocr_result(text="Hello", confidence=0.9):
 
 
 class TestEasyOCRPlugin:
+    def test_load_sync_passes_gpu_and_download_options(self):
+        """load 시 Reader 생성 인자에 GPU/다운로드 옵션이 반영되어야 한다."""
+        from src.plugins.ocr.easyocr_plugin import EasyOCRPlugin
+
+        plugin = EasyOCRPlugin(config={"gpu": True, "download_enabled": False})
+
+        with patch("easyocr.Reader") as mock_reader_cls:
+            with patch("torch.cuda.is_available", return_value=True):
+                plugin._load_sync()
+
+        mock_reader_cls.assert_called_once()
+        _, kwargs = mock_reader_cls.call_args
+        assert kwargs["gpu"] is True
+        assert kwargs["download_enabled"] is False
+
+    def test_build_reader_falls_back_to_cpu_when_cuda_unavailable(self):
+        """gpu=True 이지만 CUDA가 없으면 CPU Reader로 폴백해야 한다."""
+        from src.plugins.ocr.easyocr_plugin import EasyOCRPlugin
+
+        plugin = EasyOCRPlugin(config={"gpu": True})
+
+        with patch("easyocr.Reader") as mock_reader_cls:
+            with patch("torch.cuda.is_available", return_value=False):
+                plugin._build_reader(["en"])
+
+        _, kwargs = mock_reader_cls.call_args
+        assert kwargs["gpu"] is False
+
     async def test_detect_regions_returns_text_regions(self):
         """EasyOCR readtext 결과 → TextRegion 목록 반환."""
         from src.plugins.ocr.easyocr_plugin import EasyOCRPlugin
@@ -100,6 +128,8 @@ class TestEasyOCRPlugin:
 
         assert result.raw_text == "Corrected"
         assert result.confidence == pytest.approx(0.99)
+        assert region.raw_text == "Orignal"
+        assert region.confidence == pytest.approx(0.5)
 
 
 class TestPaddleOCRPlugin:

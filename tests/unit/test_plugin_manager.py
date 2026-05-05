@@ -1,7 +1,6 @@
 """PluginManager 단위 테스트."""
 from __future__ import annotations
 
-import os
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -124,7 +123,7 @@ class TestResolveConfig:
 
         # 숫자값은 _env 처리 안 됨 (isinstance check)
         raw = {"timeout_env": 30}
-        resolved = manager._resolve_config(raw)
+        manager._resolve_config(raw)
         config.get_api_key.assert_not_called()
 
 
@@ -180,6 +179,21 @@ class TestUnloadAll:
         manager._instances = {"ocr:easyocr": plugin}
         await manager.unload_all()
         plugin.unload.assert_not_called()
+
+    def test_invalidate_plugin_unloads_and_removes_cached_instance(self):
+        config = MagicMock()
+        manager = PluginManager(config)
+
+        plugin = MagicMock(spec=PluginBase)
+        plugin.is_loaded = True
+        plugin.unload = AsyncMock(return_value=None)
+
+        manager._instances = {"ocr:easyocr": plugin}
+
+        manager.invalidate_plugin("ocr", "easyocr")
+
+        plugin.unload.assert_called_once()
+        assert "ocr:easyocr" not in manager._instances
 
 
 class TestGetTypedPlugins:

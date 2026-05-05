@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import importlib
+import inspect
+import asyncio
 from typing import Any, TypeVar
 
 from src.core.config_manager import ConfigManager
@@ -124,6 +126,25 @@ class PluginManager:
             for e in self._config.get_plugin_configs(plugin_type)
             if self._is_enabled(e)
         ]
+
+    def invalidate_plugin(self, plugin_type: str, plugin_id: str) -> None:
+        """특정 플러그인 캐시 제거. 로드된 경우 unload를 시도한다."""
+        key = self._cache_key(plugin_type, plugin_id)
+        plugin = self._instances.pop(key, None)
+        if plugin is None or not plugin.is_loaded:
+            return
+
+        try:
+            result = plugin.unload()
+            if inspect.isawaitable(result):
+                try:
+                    loop = asyncio.get_running_loop()
+                except RuntimeError:
+                    asyncio.run(result)
+                else:
+                    loop.create_task(result)
+        except Exception as e:
+            logger.warning("플러그인 무효화 중 unload 실패 (%s): %s", key, e)
 
     async def unload_all(self) -> None:
         """모든 로드된 플러그인 해제."""

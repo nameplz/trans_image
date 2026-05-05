@@ -32,6 +32,9 @@ def settings_deps():
         default_agent_plugin="gemini_agent",
         use_agent=True,
     )
+    config.get_plugin_config.side_effect = lambda plugin_type, plugin_id: SimpleNamespace(
+        config={"gpu": False}
+    ) if (plugin_type, plugin_id) == ("ocr", "easyocr") else None
 
     pm = MagicMock(spec=PluginManager)
     pm.list_available.side_effect = lambda t: {
@@ -62,6 +65,10 @@ class TestSettingsPanel:
         """생성 직후 use_agent 체크박스가 config 값에 따라 체크된 상태여야 한다."""
         assert panel._use_agent_check.isChecked() is True
 
+    def test_easyocr_gpu_checkbox_initial(self, panel):
+        """EasyOCR GPU 체크박스는 plugin config 값에서 초기화되어야 한다."""
+        assert panel._easyocr_gpu_check.isChecked() is False
+
     def test_get_current_settings_returns_dict(self, panel):
         """get_current_settings()가 필수 키를 모두 포함한 dict를 반환해야 한다."""
         result = panel.get_current_settings()
@@ -90,6 +97,7 @@ class TestSettingsPanel:
         config, pm = settings_deps
         widget = SettingsPanel(config=config, plugin_manager=pm)
         qtbot.addWidget(widget)
+        widget._easyocr_gpu_check.setChecked(True)
 
         widget._on_apply()
 
@@ -100,6 +108,8 @@ class TestSettingsPanel:
         assert ("processing", "default_translator_plugin") in calls
         assert ("processing", "default_agent_plugin") in calls
         assert ("processing", "use_agent") in calls
+        config.set_plugin_config_value.assert_called_once_with("ocr", "easyocr", "gpu", value=True)
+        pm.invalidate_plugin.assert_called_once_with("ocr", "easyocr")
 
     def test_current_plugin_selection_loaded_from_config(self, panel):
         """기본 플러그인 선택은 저장된 config 값을 따라야 한다."""

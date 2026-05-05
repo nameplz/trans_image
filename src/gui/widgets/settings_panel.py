@@ -61,6 +61,10 @@ class SettingsPanel(QWidget):
         self._select_combo_value(self._ocr_combo, processing_settings.default_ocr_plugin)
         plugin_form.addRow("OCR 플러그인:", self._ocr_combo)
 
+        self._easyocr_gpu_check = QCheckBox("EasyOCR GPU 사용")
+        self._easyocr_gpu_check.setChecked(self._get_easyocr_gpu_enabled())
+        plugin_form.addRow("", self._easyocr_gpu_check)
+
         self._translator_combo = QComboBox()
         for pid in self._plugin_manager.list_available("translators"):
             self._translator_combo.addItem(pid)
@@ -94,7 +98,17 @@ class SettingsPanel(QWidget):
         if index >= 0:
             combo.setCurrentIndex(index)
 
+    def _get_easyocr_gpu_enabled(self) -> bool:
+        entry = self._config.get_plugin_config("ocr", "easyocr")
+        if entry is None:
+            return False
+        config = getattr(entry, "config", {})
+        return bool(config.get("gpu", False))
+
     def _on_apply(self) -> None:
+        current_gpu_enabled = self._get_easyocr_gpu_enabled()
+        next_gpu_enabled = self._easyocr_gpu_check.isChecked()
+
         self._config.set("processing", "default_source_lang", value=self._source_lang.text().strip())
         self._config.set("processing", "default_target_lang", value=self._target_lang.text().strip())
         self._config.set("processing", "default_ocr_plugin", value=self._ocr_combo.currentText())
@@ -105,6 +119,9 @@ class SettingsPanel(QWidget):
         )
         self._config.set("processing", "default_agent_plugin", value=self._agent_combo.currentText())
         self._config.set("processing", "use_agent", value=self._use_agent_check.isChecked())
+        self._config.set_plugin_config_value("ocr", "easyocr", "gpu", value=next_gpu_enabled)
+        if current_gpu_enabled != next_gpu_enabled:
+            self._plugin_manager.invalidate_plugin("ocr", "easyocr")
         self.settings_changed.emit()
 
     def get_current_settings(self) -> dict:

@@ -42,6 +42,7 @@ class TestSettingsDialog:
 
         assert dialog._panel.apply_calls == 1
         config.save.assert_called_once_with()
+        config.save_plugins.assert_called_once_with()
         dialog.accept.assert_called_once()
 
     def test_get_settings_delegates_to_panel(self, qtbot):

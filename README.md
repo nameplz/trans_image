@@ -93,6 +93,10 @@ PAPAGO_CLIENT_ID=...
 PAPAGO_CLIENT_SECRET=...
 ```
 
+앱 실행 시 프로젝트 루트의 `.env`를 자동 로드합니다.
+이미 셸에 export된 환경변수가 있으면 `.env`보다 우선합니다.
+둘 다 없을 때만 `config/default_config.yaml`의 `api_keys`가 fallback으로 사용됩니다.
+
 > `.env`는 `.gitignore`에 포함되어 있어 절대 커밋되지 않습니다.
 > 이미 소스에 노출된 키가 있었다면 즉시 폐기하고 새 키로 교체하세요.
 

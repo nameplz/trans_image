@@ -26,6 +26,7 @@ class TestCreateApp:
         }.get(keys, default)
 
         with patch("src.app.QApplication", return_value=fake_app), \
+             patch("src.app.load_project_env") as mock_load_project_env, \
              patch("src.app.ConfigManager", return_value=fake_config), \
              patch("src.app.apply_theme") as mock_apply_theme, \
              patch("src.app.setup_logging") as mock_setup_logging, \
@@ -37,6 +38,7 @@ class TestCreateApp:
 
         assert app is fake_app
         assert window is fake_window
+        mock_load_project_env.assert_called_once_with()
         fake_config.load.assert_called_once()
         mock_apply_theme.assert_called_once_with(fake_app, "light")
         mock_setup_logging.assert_called_once_with(level="DEBUG", log_file="logs/app.log")
@@ -44,6 +46,32 @@ class TestCreateApp:
         MockSession.assert_called_once()
         MockPipeline.assert_called_once()
         fake_app.setApplicationName.assert_called_once_with("trans_image")
+
+    def test_create_app_loads_project_env_before_config(self):
+        fake_app = MagicMock()
+        fake_config = MagicMock()
+        events: list[str] = []
+
+        def record_env_load() -> None:
+            events.append("env")
+
+        def record_config_load() -> None:
+            events.append("config")
+
+        fake_config.load.side_effect = record_config_load
+
+        with patch("src.app.QApplication", return_value=fake_app), \
+             patch("src.app.load_project_env", side_effect=record_env_load), \
+             patch("src.app.ConfigManager", return_value=fake_config), \
+             patch("src.app.apply_theme"), \
+             patch("src.app.setup_logging"), \
+             patch("src.app.PluginManager"), \
+             patch("src.app.Session"), \
+             patch("src.app.Pipeline"), \
+             patch("src.app.MainWindow"):
+            create_app(["prog"])
+
+        assert events[:2] == ["env", "config"]
 
     def test_run_gui_shows_window_and_returns_exec_code(self):
         app = MagicMock()
@@ -125,15 +153,51 @@ class TestCliEntrypoint:
             verbose=False,
         )
 
-        with patch("src.utils.logger.setup_logging"), \
+        with patch("src.__main__.load_project_env") as mock_load_project_env, \
+             patch("src.utils.logger.setup_logging"), \
              patch("src.core.config_manager.ConfigManager") as MockConfig, \
              patch("src.core.plugin_manager.PluginManager"), \
              patch("src.core.session.Session"), \
              patch("src.core.pipeline.Pipeline"):
             result = await run_cli(args)
 
+        mock_load_project_env.assert_called_once_with()
         MockConfig.return_value.load.assert_called_once()
         assert result == 1
+
+    @pytest.mark.asyncio
+    async def test_run_cli_loads_project_env_before_config(self, tmp_path):
+        from src.__main__ import run_cli
+
+        args = argparse.Namespace(
+            input=str(tmp_path / "missing.png"),
+            output=None,
+            target_lang="ko",
+            source_lang="auto",
+            translator="deepl",
+            agent="openai",
+            ocr="easyocr",
+            no_agent=False,
+            verbose=False,
+        )
+        events: list[str] = []
+
+        def record_env_load() -> None:
+            events.append("env")
+
+        def record_config_load() -> None:
+            events.append("config")
+
+        with patch("src.__main__.load_project_env", side_effect=record_env_load), \
+             patch("src.utils.logger.setup_logging"), \
+             patch("src.core.config_manager.ConfigManager") as MockConfig, \
+             patch("src.core.plugin_manager.PluginManager"), \
+             patch("src.core.session.Session"), \
+             patch("src.core.pipeline.Pipeline"):
+            MockConfig.return_value.load.side_effect = record_config_load
+            await run_cli(args)
+
+        assert events[:2] == ["env", "config"]
 
     @pytest.mark.asyncio
     async def test_run_cli_runs_pipeline_and_returns_zero(self, tmp_path):

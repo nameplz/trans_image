@@ -1,66 +1,53 @@
-# trans_image 기본 설정
-
+api_keys:
+  anthropic: ''
+  deepl: ''
+  google: ''
+  openai: ''
+  papago_client_id: ''
+  papago_client_secret: ''
+  xai: ''
 app:
-  name: "trans_image"
-  version: "0.1.0"
-  theme: "dark"  # dark | light
-  language: "ko"  # UI 언어
-
+  language: ko
+  name: trans_image
+  recent_files:
+  - /Users/yuhyeon/Documents/proj/trans_image/trans_test_images
+  theme: dark
+  version: 0.1.0
+chat:
+  default_output_suffix: _translated
+  enabled: true
+  llm_model: claude-haiku-4-5-20251001
+  llm_provider: anthropic
+  max_history: 50
+export:
+  default_format: png
+  jpg_quality: 95
+  output_dir: ''
+  png_compression: 3
+  webp_quality: 90
+inpainting:
+  mask_dilation: 5
+  method: opencv_ns
+logging:
+  backup_count: 5
+  file: logs/trans_image.log
+  level: INFO
+  max_bytes: 10485760
+ollama:
+  base_url: http://localhost:11434
+  default_model: llama3.1
 processing:
-  default_source_lang: "auto"  # auto 또는 언어 코드
-  default_target_lang: "ko"
-  default_ocr_plugin: "easyocr"
-  default_translator_plugin: "deepl"
-  default_agent_plugin: "claude"
-  use_agent: true  # 에이전트 분석/검증 활성화
   agent_analyze: true
   agent_validate: true
-
-inpainting:
-  method: "opencv_ns"  # opencv_ns | lama
-  mask_dilation: 5  # bbox 팽창 픽셀 수
-
+  default_agent_plugin: gemini
+  default_ocr_plugin: easyocr
+  default_source_lang: auto
+  default_target_lang: ko
+  default_translator_plugin: deepl
+  use_agent: true
 rendering:
   auto_font_size: true
-  min_font_size: 8
-  max_font_size: 72
-  font_fallback: "NotoSansCJK"
+  font_fallback: NotoSansCJK
   line_spacing: 1.2
-
-api_keys:
-  # 기본 설정 파일에는 실제 키를 저장하지 않는다.
-  # 런타임에는 환경변수를 우선 사용하고, 아래 값은 로컬 비밀 설정이 필요할 때만
-  # .gitignore 된 사용자 전용 설정으로 관리한다.
-  # 환경변수 이름: DEEPL_API_KEY / GOOGLE_API_KEY / XAI_API_KEY /
-  # OPENAI_API_KEY / ANTHROPIC_API_KEY / PAPAGO_CLIENT_ID / PAPAGO_CLIENT_SECRET
-  deepl: ""
-  google: ""
-  xai: ""
-  openai: ""
-  anthropic: ""
-  papago_client_id: ""
-  papago_client_secret: ""
-
-ollama:
-  base_url: "http://localhost:11434"
-  default_model: "llama3.1"
-
-logging:
-  level: "INFO"  # DEBUG | INFO | WARNING | ERROR
-  file: "logs/trans_image.log"
-  max_bytes: 10485760  # 10MB
-  backup_count: 5
-
-export:
-  default_format: "png"  # png | jpg | webp
-  jpg_quality: 95
-  webp_quality: 90
-  png_compression: 3
-  output_dir: ""  # 비어 있으면 원본 파일과 같은 디렉토리
-
-chat:
-  enabled: true
-  llm_provider: "anthropic"      # anthropic | openai | ollama | grok
-  llm_model: "claude-haiku-4-5-20251001"  # 경량 모델 — 의도 파악 전용
-  max_history: 50
-  default_output_suffix: "_translated"
+  max_font_size: 72
+  min_font_size: 8

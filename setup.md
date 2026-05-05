@@ -25,6 +25,9 @@ export PAPAGO_CLIENT_SECRET="your-papago-client-secret"
 ```
 
 `.env`를 쓰려면 `.env.example`을 복사해 사용한다.
+앱 실행 시 프로젝트 루트의 `.env`를 자동 로드한다.
+이미 셸에 export된 환경변수가 있으면 `.env`보다 우선하고,
+둘 다 없을 때만 `config/default_config.yaml`의 `api_keys`를 fallback으로 사용한다.
 
 ## 실행
 

@@ -11,6 +11,7 @@ from src.core.plugin_manager import PluginManager
 from src.core.session import Session
 from src.gui.main_window import MainWindow
 from src.gui.theme import apply_theme
+from src.utils.env_loader import load_project_env
 from src.utils.logger import get_logger, setup_logging
 
 logger = get_logger("trans_image.app")
@@ -22,7 +23,8 @@ def create_app(argv: list[str] | None = None) -> tuple[QApplication, MainWindow]
     app.setApplicationName("trans_image")
     app.setApplicationVersion("0.1.0")
 
-    # 설정 로드
+    # 설정 로드 전에 프로젝트 .env를 주입한다.
+    load_project_env()
     config = ConfigManager()
     config.load()
 

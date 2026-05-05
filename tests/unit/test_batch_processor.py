@@ -14,7 +14,9 @@ from src.models.processing_job import ProcessingJob, JobStatus
 
 def make_parsed(
     tmp_path: Path,
+    source_lang: str | None = None,
     target_lang: str = "ko",
+    ocr_plugin_id: str | None = None,
     translator_id: str | None = None,
     agent_id: str | None = None,
     output_dir: Path | None = None,
@@ -23,7 +25,9 @@ def make_parsed(
     return ParsedMessage(
         raw_text="test",
         directory_path=tmp_path,
+        source_lang=source_lang,
         target_lang=target_lang,
+        ocr_plugin_id=ocr_plugin_id,
         translator_id=translator_id,
         agent_id=agent_id,
         output_dir=output_dir,
@@ -119,6 +123,18 @@ class TestCreateBatchJobs:
         img.touch()
         jobs = BatchProcessor().create_batch_jobs([img], make_parsed(tmp_path, target_lang="ja"))
         assert jobs[0].target_lang == "ja"
+
+    def test_sets_source_lang(self, tmp_path):
+        img = tmp_path / "img.png"
+        img.touch()
+        jobs = BatchProcessor().create_batch_jobs([img], make_parsed(tmp_path, source_lang="en"))
+        assert jobs[0].source_lang == "en"
+
+    def test_sets_ocr_plugin_id(self, tmp_path):
+        img = tmp_path / "img.png"
+        img.touch()
+        jobs = BatchProcessor().create_batch_jobs([img], make_parsed(tmp_path, ocr_plugin_id="paddleocr"))
+        assert jobs[0].ocr_plugin_id == "paddleocr"
 
     def test_sets_translator_id(self, tmp_path):
         img = tmp_path / "img.png"

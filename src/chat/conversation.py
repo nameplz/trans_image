@@ -28,7 +28,9 @@ class ParsedMessage:
     """@경로 멘션 및 파라미터가 파싱된 사용자 메시지."""
     raw_text: str
     directory_path: Path | None
+    source_lang: str | None
     target_lang: str | None
+    ocr_plugin_id: str | None
     translator_id: str | None
     agent_id: str | None
     output_dir: Path | None

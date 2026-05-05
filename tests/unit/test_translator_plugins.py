@@ -1,11 +1,9 @@
 """번역 플러그인 단위 테스트 (5개 번역기)."""
 from __future__ import annotations
 
+import logging
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
-
-from src.core.exceptions import PluginConfigError
 from src.models.text_region import BoundingBox, TextRegion
 from src.models.translation_result import TranslationResult
 
@@ -70,6 +68,73 @@ class TestDeepLTranslatorPlugin:
 
         assert len(results) == 2
         assert all(isinstance(r, TranslationResult) for r in results)
+
+    async def test_translate_batch_unsupported_source_lang_falls_back_to_auto(self, caplog):
+        """미지원 source_lang은 DeepL auto-detect(None)로 폴백한다."""
+        from src.plugins.translators.deepl_translator import DeepLTranslatorPlugin
+
+        with patch("deepl.Translator") as mock_cls:
+            mock_translator = MagicMock()
+            mock_results = [MagicMock(text="번역1")]
+            mock_translator.translate_text.return_value = mock_results
+            mock_cls.return_value = mock_translator
+
+            plugin = DeepLTranslatorPlugin(config={"api_key": "test-key"})
+            await plugin.load()
+            regions = [make_region("Hello")]
+
+            with caplog.at_level(logging.WARNING, logger="trans_image.translator.deepl"):
+                results = await plugin.translate_batch(regions, "cr", "ko")
+
+        assert len(results) == 1
+        mock_translator.translate_text.assert_called_once_with(
+            ["Hello"],
+            source_lang=None,
+            target_lang="KO",
+        )
+        assert any("지원되지 않는 DeepL source_lang" in r.message for r in caplog.records)
+
+    async def test_translate_batch_und_source_lang_falls_back_to_auto(self):
+        """und source_lang은 DeepL auto-detect(None)로 폴백한다."""
+        from src.plugins.translators.deepl_translator import DeepLTranslatorPlugin
+
+        with patch("deepl.Translator") as mock_cls:
+            mock_translator = MagicMock()
+            mock_results = [MagicMock(text="번역1")]
+            mock_translator.translate_text.return_value = mock_results
+            mock_cls.return_value = mock_translator
+
+            plugin = DeepLTranslatorPlugin(config={"api_key": "test-key"})
+            await plugin.load()
+            regions = [make_region("Hello")]
+            await plugin.translate_batch(regions, "und", "ko")
+
+        mock_translator.translate_text.assert_called_once_with(
+            ["Hello"],
+            source_lang=None,
+            target_lang="KO",
+        )
+
+    async def test_translate_batch_supported_source_lang_is_preserved(self):
+        """지원되는 source_lang은 명시적으로 DeepL에 전달한다."""
+        from src.plugins.translators.deepl_translator import DeepLTranslatorPlugin
+
+        with patch("deepl.Translator") as mock_cls:
+            mock_translator = MagicMock()
+            mock_results = [MagicMock(text="번역1")]
+            mock_translator.translate_text.return_value = mock_results
+            mock_cls.return_value = mock_translator
+
+            plugin = DeepLTranslatorPlugin(config={"api_key": "test-key"})
+            await plugin.load()
+            regions = [make_region("Hello")]
+            await plugin.translate_batch(regions, "en", "ko")
+
+        mock_translator.translate_text.assert_called_once_with(
+            ["Hello"],
+            source_lang="EN",
+            target_lang="KO",
+        )
 
 
 # ── Gemini ────────────────────────────────────────────────────────────────────

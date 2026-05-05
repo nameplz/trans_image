@@ -16,6 +16,7 @@ logger = get_logger("trans_image.config")
 
 _DEFAULT_CONFIG_PATH = Path(__file__).parent.parent.parent / "config" / "default_config.yaml"
 _PLUGINS_CONFIG_PATH = Path(__file__).parent.parent.parent / "config" / "plugins.yaml"
+_MAX_RECENT_FILES = 10
 
 
 class ConfigManager:
@@ -87,6 +88,30 @@ class ConfigManager:
             node = child
         node[keys[-1]] = value
         self._refresh_typed_settings_for_section(keys[0])
+
+    def add_recent_file(self, path: Path, *, save: bool = False) -> None:
+        normalized = str(path.expanduser().resolve(strict=False))
+        current = [
+            item
+            for item in self.app_settings.recent_files
+            if item != normalized
+        ]
+        updated = [normalized, *current][: _MAX_RECENT_FILES]
+        self.set("app", "recent_files", value=updated)
+        if save:
+            self.save()
+
+    def remove_recent_file(self, path: Path, *, save: bool = False) -> None:
+        normalized = str(path.expanduser().resolve(strict=False))
+        updated = [item for item in self.app_settings.recent_files if item != normalized]
+        self.set("app", "recent_files", value=updated)
+        if save:
+            self.save()
+
+    def clear_recent_files(self, *, save: bool = False) -> None:
+        self.set("app", "recent_files", value=[])
+        if save:
+            self.save()
 
     def _refresh_all_typed_settings(self) -> None:
         self._app_settings = AppSettings.from_dict(self._config.get("app"))

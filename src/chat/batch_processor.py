@@ -85,6 +85,10 @@ class BatchProcessor:
         jobs = []
         for img_path in image_paths:
             extra: dict = {}
+            if parsed.source_lang is not None:
+                extra["source_lang"] = parsed.source_lang
+            if parsed.ocr_plugin_id is not None:
+                extra["ocr_plugin_id"] = parsed.ocr_plugin_id
             if parsed.translator_id is not None:
                 extra["translator_plugin_id"] = parsed.translator_id
             if parsed.agent_id is not None:

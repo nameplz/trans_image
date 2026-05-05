@@ -16,7 +16,9 @@ def _make_parsed(
     return ParsedMessage(
         raw_text="",
         directory_path=directory_path,
+        source_lang=None,
         target_lang=target_lang,
+        ocr_plugin_id=None,
         translator_id=None,
         agent_id=None,
         output_dir=None,

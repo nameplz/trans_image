@@ -28,12 +28,41 @@ def _read_value(
     return value
 
 
+def _read_string_sequence(
+    data: dict[str, Any],
+    key: str,
+    default: tuple[str, ...],
+    *,
+    max_items: int | None = None,
+) -> tuple[str, ...]:
+    value = data.get(key, default)
+    if value is None:
+        return default
+    if not isinstance(value, (list, tuple)):
+        raise ConfigError(
+            f"설정 키 '{key}' 타입 오류: expected list, got {type(value).__name__}"
+        )
+
+    result: list[str] = []
+    for item in value:
+        if not isinstance(item, str) or not item.strip():
+            raise ConfigError(
+                f"설정 키 '{key}' 원소 타입 오류: expected non-empty str, got {type(item).__name__}"
+            )
+        result.append(item)
+
+    if max_items is not None:
+        result = result[:max_items]
+    return tuple(result)
+
+
 @dataclass(frozen=True)
 class AppSettings:
     name: str = "trans_image"
     version: str = "0.1.0"
     theme: str = "dark"
     language: str = "ko"
+    recent_files: tuple[str, ...] = ()
 
     @classmethod
     def from_dict(cls, data: dict[str, Any] | None) -> "AppSettings":
@@ -43,6 +72,7 @@ class AppSettings:
             version=_read_value(source, "version", str, cls.version),
             theme=_read_value(source, "theme", str, cls.theme),
             language=_read_value(source, "language", str, cls.language),
+            recent_files=_read_string_sequence(source, "recent_files", cls.recent_files, max_items=10),
         )
 
 

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Iterable
 
 import numpy as np
 from PySide6.QtCore import Qt, QTimer, Slot
@@ -20,6 +21,7 @@ from PySide6.QtWidgets import (
 )
 
 from src.chat.conversation import ConversationSession
+from src.chat.batch_processor import BatchProcessor
 from src.chat.message_parser import MessageParser
 from src.core.config_manager import ConfigManager
 from src.core.exceptions import ConcurrencyLimitError
@@ -44,6 +46,7 @@ from src.models.processing_job import ProcessingJob
 from src.utils.logger import get_logger
 
 logger = get_logger("trans_image.main_window")
+_SUPPORTED_IMAGE_SUFFIXES = frozenset({".png", ".jpg", ".jpeg", ".webp", ".bmp", ".tiff"})
 
 
 class MainWindow(QMainWindow):
@@ -77,6 +80,9 @@ class MainWindow(QMainWindow):
             parent=self,
         )
         self._loaded_image_path: Path | None = None
+        self._loaded_folder_path: Path | None = None
+        self._loaded_folder_images: tuple[Path, ...] = ()
+        self._batch_processor = BatchProcessor()
 
         self.setWindowTitle("trans_image — AI 이미지 텍스트 번역")
         self.setMinimumSize(1200, 700)
@@ -246,28 +252,40 @@ class MainWindow(QMainWindow):
 
     def _setup_menu(self) -> None:
         menubar = self.menuBar()
+        menubar.setNativeMenuBar(False)
 
-        file_menu = menubar.addMenu("파일(&F)")
-        open_action = QAction("열기(&O)", self)
-        open_action.setShortcut(QKeySequence.StandardKey.Open)
-        open_action.triggered.connect(self._open_file)
-        file_menu.addAction(open_action)
+        self._file_menu = menubar.addMenu("파일(&F)")
+        self._open_action = QAction("열기(&O)", self)
+        self._open_action.setShortcuts([QKeySequence("Ctrl+O"), QKeySequence("Meta+O")])
+        self._open_action.triggered.connect(self._open_file)
+        self._file_menu.addAction(self._open_action)
 
-        export_action = QAction("내보내기(&E)", self)
-        export_action.setShortcut(QKeySequence("Ctrl+E"))
-        export_action.triggered.connect(self._export)
-        file_menu.addAction(export_action)
+        self._open_folder_action = QAction("폴더 열기(&D)", self)
+        self._open_folder_action.setShortcuts(
+            [QKeySequence("Ctrl+Shift+O"), QKeySequence("Meta+Shift+O")]
+        )
+        self._open_folder_action.triggered.connect(lambda: self._open_folder())
+        self._file_menu.addAction(self._open_folder_action)
 
-        file_menu.addSeparator()
-        quit_action = QAction("종료(&Q)", self)
-        quit_action.setShortcut(QKeySequence.StandardKey.Quit)
-        quit_action.triggered.connect(self.close)
-        file_menu.addAction(quit_action)
+        self._recent_files_menu = self._file_menu.addMenu("최근 파일(&R)")
+        self._recent_files_menu.aboutToShow.connect(self._refresh_recent_files_menu)
+
+        self._export_action = QAction("내보내기(&E)", self)
+        self._export_action.setShortcuts([QKeySequence("Ctrl+S"), QKeySequence("Ctrl+E")])
+        self._export_action.triggered.connect(self._export)
+        self._file_menu.addAction(self._export_action)
+
+        self._file_menu.addSeparator()
+        self._quit_action = QAction("종료(&Q)", self)
+        self._quit_action.setShortcut(QKeySequence.StandardKey.Quit)
+        self._quit_action.triggered.connect(self.close)
+        self._file_menu.addAction(self._quit_action)
 
         settings_menu = menubar.addMenu("설정(&S)")
-        settings_action = QAction("설정 열기", self)
-        settings_action.triggered.connect(self._open_settings)
-        settings_menu.addAction(settings_action)
+        self._settings_action = QAction("설정 열기", self)
+        self._settings_action.setShortcut(QKeySequence("Ctrl+,"))
+        self._settings_action.triggered.connect(self._open_settings)
+        settings_menu.addAction(self._settings_action)
 
         view_menu = menubar.addMenu("보기(&V)")
         self._theme_action_group = QActionGroup(self)
@@ -281,18 +299,25 @@ class MainWindow(QMainWindow):
         view_menu.addAction(self._dark_theme_action)
         view_menu.addAction(self._light_theme_action)
         self._sync_theme_actions()
+        self._refresh_recent_files_menu()
 
     def _setup_toolbar(self) -> None:
         toolbar = QToolBar("도구 모음")
         self.addToolBar(toolbar)
 
+        toolbar.addAction(self._open_action)
+        toolbar.addAction(self._open_folder_action)
+        toolbar.addSeparator()
+
         self._process_action = QAction("▶ 처리 시작", self)
+        self._process_action.setShortcut(QKeySequence("F5"))
         self._process_action.triggered.connect(self._start_processing)
         toolbar.addAction(self._process_action)
 
-        cancel_action = QAction("■ 취소", self)
-        cancel_action.triggered.connect(self._cancel_processing)
-        toolbar.addAction(cancel_action)
+        self._cancel_action = QAction("■ 취소", self)
+        self._cancel_action.setShortcut(QKeySequence("Escape"))
+        self._cancel_action.triggered.connect(self._cancel_active_work)
+        toolbar.addAction(self._cancel_action)
 
     def _setup_statusbar(self) -> None:
         self._status_bar = QStatusBar()
@@ -300,13 +325,17 @@ class MainWindow(QMainWindow):
         self._status_bar.showMessage("준비")
 
     def dragEnterEvent(self, event: QDragEnterEvent) -> None:
-        if event.mimeData().hasUrls():
+        if self._has_supported_drop_paths(self._iter_local_paths(event.mimeData().urls())):
             event.acceptProposedAction()
 
     def dropEvent(self, event: QDropEvent) -> None:
-        for url in event.mimeData().urls():
-            path = Path(url.toLocalFile())
-            if path.suffix.lower() in (".png", ".jpg", ".jpeg", ".webp", ".bmp"):
+        dropped_paths = list(self._iter_local_paths(event.mimeData().urls()))
+        directory = next((path for path in dropped_paths if path.is_dir()), None)
+        if directory is not None:
+            self._open_folder(directory)
+            return
+        for path in dropped_paths:
+            if self._is_supported_image_path(path):
                 self._load_image(path)
 
     def _open_file(self) -> None:
@@ -319,7 +348,42 @@ class MainWindow(QMainWindow):
         if path:
             self._load_image(Path(path))
 
-    def _load_image(self, path: Path) -> None:
+    def _open_folder(self, folder: Path | None = None) -> None:
+        if folder is None:
+            selected = QFileDialog.getExistingDirectory(self, "폴더 열기", "")
+            if not selected:
+                return
+            folder = Path(selected)
+
+        folder = folder.expanduser().resolve(strict=False)
+        if not folder.exists() or not folder.is_dir():
+            QMessageBox.warning(self, "경고", f"유효한 폴더가 아닙니다:\n{folder}")
+            return
+
+        try:
+            images = tuple(self._batch_processor.scan_directory(folder))
+        except Exception as exc:
+            QMessageBox.critical(self, "오류", f"폴더 스캔 실패:\n{exc}")
+            return
+
+        if not images:
+            QMessageBox.warning(self, "경고", "지원하는 이미지 파일이 없습니다.")
+            return
+
+        self._loaded_folder_path = folder
+        self._loaded_folder_images = images
+        self._load_image(images[0], record_recent=False, clear_folder_context=False)
+        self._config.add_recent_file(folder, save=True)
+        self._refresh_recent_files_menu()
+        self._status_bar.showMessage(f"폴더 로드: {folder.name} ({len(images)}개 이미지)")
+
+    def _load_image(
+        self,
+        path: Path,
+        *,
+        record_recent: bool = True,
+        clear_folder_context: bool = True,
+    ) -> None:
         try:
             import cv2
 
@@ -330,22 +394,43 @@ class MainWindow(QMainWindow):
             self._image_viewer.set_image(rgb)
             self._overlay_manager.clear()
             self._loaded_image_path = path
+            if clear_folder_context:
+                self._loaded_folder_path = None
+                self._loaded_folder_images = ()
+            if record_recent:
+                self._config.add_recent_file(path, save=True)
+                self._refresh_recent_files_menu()
             self._status_bar.showMessage(f"로드: {path.name}")
             logger.info("이미지 로드: %s", path)
         except Exception as exc:
             QMessageBox.critical(self, "오류", f"이미지 로드 실패:\n{exc}")
 
     def _start_processing(self) -> None:
+        folder_path = self._loaded_folder_path
+        image_path = self._loaded_image_path
+        if folder_path is None and (not image_path or not image_path.exists()):
+            QMessageBox.warning(self, "경고", "먼저 이미지 또는 폴더를 로드하세요.")
+            return
+
         settings_dlg = SettingsDialog(self._config, self._plugin_manager, self)
         if settings_dlg.exec() == SettingsDialog.DialogCode.Rejected:
             return
 
         settings = settings_dlg.get_settings()
-        path = self._loaded_image_path
+        if folder_path is not None:
+            accepted = self._chat_controller.submit_directory_batch(
+                folder_path,
+                settings,
+                parent=self,
+            )
+            if accepted:
+                self._status_bar.showMessage(f"배치 시작: {folder_path.name}")
+            return
+
+        path = image_path
         if not path or not path.exists():
             QMessageBox.warning(self, "경고", "먼저 이미지를 로드하세요.")
             return
-
         try:
             job = self._job_controller.start_processing(path, settings, parent=self)
         except ConcurrencyLimitError as exc:
@@ -355,6 +440,10 @@ class MainWindow(QMainWindow):
 
     def _cancel_processing(self) -> None:
         self._job_controller.cancel_processing()
+
+    def _cancel_active_work(self) -> None:
+        self._cancel_processing()
+        self._cancel_batch()
 
     def _export(self) -> None:
         if not self._current_job or self._current_job.final_image is None:
@@ -384,6 +473,52 @@ class MainWindow(QMainWindow):
     def _open_settings(self) -> None:
         dlg = SettingsDialog(self._config, self._plugin_manager, self)
         dlg.exec()
+
+    def _refresh_recent_files_menu(self) -> None:
+        self._recent_files_menu.clear()
+        recent_files = self._config.app_settings.recent_files
+        if not recent_files:
+            empty_action = self._recent_files_menu.addAction("최근 파일 없음")
+            empty_action.setEnabled(False)
+            return
+
+        for path_str in recent_files:
+            path = Path(path_str)
+            action = self._recent_files_menu.addAction(path_str)
+            action.triggered.connect(
+                lambda checked=False, target=path: self._open_recent_path(target)
+            )
+
+        self._recent_files_menu.addSeparator()
+        clear_action = self._recent_files_menu.addAction("최근 목록 지우기")
+        clear_action.triggered.connect(self._clear_recent_files)
+
+    def _open_recent_path(self, path: Path) -> None:
+        if not path.exists():
+            QMessageBox.warning(self, "경고", f"최근 항목을 찾을 수 없습니다:\n{path}")
+            self._config.remove_recent_file(path, save=True)
+            self._refresh_recent_files_menu()
+            return
+        if path.is_dir():
+            self._open_folder(path)
+            return
+        self._load_image(path)
+
+    def _clear_recent_files(self) -> None:
+        self._config.clear_recent_files(save=True)
+        self._refresh_recent_files_menu()
+
+    def _iter_local_paths(self, urls) -> Iterable[Path]:
+        for url in urls:
+            local_file = url.toLocalFile()
+            if local_file:
+                yield Path(local_file)
+
+    def _has_supported_drop_paths(self, paths: Iterable[Path]) -> bool:
+        return any(path.is_dir() or self._is_supported_image_path(path) for path in paths)
+
+    def _is_supported_image_path(self, path: Path) -> bool:
+        return path.is_file() and path.suffix.lower() in _SUPPORTED_IMAGE_SUFFIXES
 
     @Slot(str, float, str)
     def _on_progress(self, job_id: str, progress: float, message: str) -> None:

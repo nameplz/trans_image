@@ -1,12 +1,13 @@
 """GUI chat orchestration controller."""
 from __future__ import annotations
 
+from collections.abc import Mapping
 from pathlib import Path
 from typing import Any, Callable
 
 from PySide6.QtCore import QObject, Signal
 
-from src.chat.conversation import ConversationSession
+from src.chat.conversation import ConversationSession, ParsedMessage
 from src.chat.message_parser import MessageParser
 from src.core.config_manager import ConfigManager
 from src.core.pipeline import Pipeline
@@ -65,11 +66,40 @@ class ChatController(QObject):
         self._chat_stream_active = value
 
     def submit_message(self, text: str, *, cwd: Path | None = None, parent: QObject | None = None) -> bool:
+        parsed = self._msg_parser.parse(text, cwd or Path.cwd())
+        return self._start_batch_worker(parsed, parent=parent)
+
+    def submit_directory_batch(
+        self,
+        directory: Path,
+        settings: Mapping[str, Any],
+        *,
+        parent: QObject | None = None,
+    ) -> bool:
+        parsed = ParsedMessage(
+            raw_text=f"@{directory}",
+            directory_path=directory,
+            source_lang=settings["source_lang"],
+            target_lang=settings["target_lang"],
+            ocr_plugin_id=settings["ocr_plugin"],
+            translator_id=settings["translator_plugin"],
+            agent_id=settings["agent_plugin"],
+            output_dir=None,
+            use_agent=settings["use_agent"],
+            intent="translate",
+        )
+        return self._start_batch_worker(parsed, parent=parent)
+
+    def _start_batch_worker(
+        self,
+        parsed: ParsedMessage,
+        *,
+        parent: QObject | None = None,
+    ) -> bool:
         if self._batch_worker is not None and self._batch_worker.isRunning():
             self.system_message.emit("이전 배치가 실행 중입니다. 완료 후 다시 시도해 주세요.")
             return False
 
-        parsed = self._msg_parser.parse(text, cwd or Path.cwd())
         chat_settings = self._config.chat_settings
         chat_config = {
             "llm_provider": chat_settings.llm_provider,

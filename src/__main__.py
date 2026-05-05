@@ -6,6 +6,8 @@ import asyncio
 import sys
 from pathlib import Path
 
+from src.utils.env_loader import load_project_env
+
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
@@ -33,6 +35,7 @@ async def run_cli(args: argparse.Namespace) -> int:
 
     setup_logging("DEBUG" if args.verbose else "INFO")
 
+    load_project_env()
     config = ConfigManager()
     config.load()
 

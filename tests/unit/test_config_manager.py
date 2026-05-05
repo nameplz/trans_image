@@ -253,3 +253,83 @@ class TestTypedSettingsSynchronization:
         assert reloaded.get("app", "language") == "en"
         assert reloaded.app_settings.theme == "light"
         assert reloaded.app_settings.language == "en"
+
+
+class TestRecentFiles:
+    def test_add_recent_file_inserts_most_recent_first(self, tmp_path):
+        cfg_path = _write_yaml(tmp_path, {"app": {"recent_files": []}})
+        mgr = ConfigManager(config_path=cfg_path, plugins_path=_plugins_yaml(tmp_path))
+        mgr.load()
+
+        first = tmp_path / "a.png"
+        second = tmp_path / "folder"
+        mgr.add_recent_file(first)
+        mgr.add_recent_file(second)
+
+        assert mgr.app_settings.recent_files == (
+            str(second.resolve()),
+            str(first.resolve()),
+        )
+
+    def test_readding_recent_file_moves_it_to_front(self, tmp_path):
+        cfg_path = _write_yaml(tmp_path, {"app": {"recent_files": []}})
+        mgr = ConfigManager(config_path=cfg_path, plugins_path=_plugins_yaml(tmp_path))
+        mgr.load()
+
+        first = tmp_path / "a.png"
+        second = tmp_path / "b.png"
+        mgr.add_recent_file(first)
+        mgr.add_recent_file(second)
+        mgr.add_recent_file(first)
+
+        assert mgr.app_settings.recent_files == (
+            str(first.resolve()),
+            str(second.resolve()),
+        )
+
+    def test_recent_files_capped_at_ten(self, tmp_path):
+        cfg_path = _write_yaml(tmp_path, {"app": {"recent_files": []}})
+        mgr = ConfigManager(config_path=cfg_path, plugins_path=_plugins_yaml(tmp_path))
+        mgr.load()
+
+        for index in range(12):
+            mgr.add_recent_file(tmp_path / f"{index}.png")
+
+        assert len(mgr.app_settings.recent_files) == 10
+        assert mgr.app_settings.recent_files[0] == str((tmp_path / "11.png").resolve())
+        assert mgr.app_settings.recent_files[-1] == str((tmp_path / "2.png").resolve())
+
+    def test_remove_recent_file_updates_raw_and_typed_settings(self, tmp_path):
+        cfg_path = _write_yaml(tmp_path, {"app": {"recent_files": []}})
+        mgr = ConfigManager(config_path=cfg_path, plugins_path=_plugins_yaml(tmp_path))
+        mgr.load()
+        target = tmp_path / "a.png"
+        mgr.add_recent_file(target)
+
+        mgr.remove_recent_file(target)
+
+        assert mgr.app_settings.recent_files == ()
+        assert mgr.get("app", "recent_files") == []
+
+    def test_clear_recent_files_updates_raw_and_typed_settings(self, tmp_path):
+        cfg_path = _write_yaml(tmp_path, {"app": {"recent_files": ["/tmp/a.png"]}})
+        mgr = ConfigManager(config_path=cfg_path, plugins_path=_plugins_yaml(tmp_path))
+        mgr.load()
+
+        mgr.clear_recent_files()
+
+        assert mgr.app_settings.recent_files == ()
+        assert mgr.get("app", "recent_files") == []
+
+    def test_recent_files_persist_after_save_and_reload(self, tmp_path):
+        cfg_path = _write_yaml(tmp_path, {"app": {"recent_files": []}})
+        mgr = ConfigManager(config_path=cfg_path, plugins_path=_plugins_yaml(tmp_path))
+        mgr.load()
+        folder = tmp_path / "images"
+        mgr.add_recent_file(folder)
+        mgr.save()
+
+        reloaded = ConfigManager(config_path=cfg_path, plugins_path=_plugins_yaml(tmp_path))
+        reloaded.load()
+
+        assert reloaded.app_settings.recent_files == (str(folder.resolve()),)

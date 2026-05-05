@@ -4,10 +4,33 @@ import pytest
 
 from src.core.exceptions import ConfigError
 from src.core.plugin_registry_models import PluginRegistry
-from src.core.settings_models import ChatSettings, ProcessingSettings, RenderingSettings
+from src.core.settings_models import AppSettings, ChatSettings, ProcessingSettings, RenderingSettings
 
 
 class TestSettingsModels:
+    def test_app_settings_defaults_recent_files_to_empty_tuple(self):
+        settings = AppSettings.from_dict({})
+        assert settings.recent_files == ()
+
+    def test_app_settings_reads_recent_files(self):
+        settings = AppSettings.from_dict({"recent_files": ["/tmp/a.png", "/tmp/b"]})
+        assert settings.recent_files == ("/tmp/a.png", "/tmp/b")
+
+    def test_app_settings_trims_recent_files_to_ten(self):
+        paths = [f"/tmp/{index}.png" for index in range(12)]
+        settings = AppSettings.from_dict({"recent_files": paths})
+        assert len(settings.recent_files) == 10
+        assert settings.recent_files[0] == "/tmp/0.png"
+        assert settings.recent_files[-1] == "/tmp/9.png"
+
+    def test_app_settings_rejects_invalid_recent_files_type(self):
+        with pytest.raises(ConfigError):
+            AppSettings.from_dict({"recent_files": "not-a-list"})
+
+    def test_app_settings_rejects_invalid_recent_files_entries(self):
+        with pytest.raises(ConfigError):
+            AppSettings.from_dict({"recent_files": ["/tmp/a.png", 123]})
+
     def test_processing_settings_from_dict_reads_values(self):
         settings = ProcessingSettings.from_dict(
             {
